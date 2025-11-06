@@ -1,0 +1,20 @@
+{
+  "doctype": "DocType",
+  "name": "Invoice Evidence",
+  "module": "AEAT Module",
+  "custom": true,
+  "fields": [
+    {"fieldname": "invoice", "label": "Invoice", "fieldtype": "Link", "options": "Sales Invoice", "reqd": 1},
+    {"fieldname": "snapshot_hash", "label": "Snapshot Hash", "fieldtype": "Data"},
+    {"fieldname": "snapshot_file", "label": "Snapshot File", "fieldtype": "Attach"},
+    {"fieldname": "tsa_token", "label": "TSA Token", "fieldtype": "Text"},
+    {"fieldname": "signature", "label": "Signature", "fieldtype": "Text"},
+    {"fieldname": "event", "label": "Event", "fieldtype": "Select", "options": "submit\ncancel\nupdate_after_submit\nmanually_added"},
+    {"fieldname": "notes", "label": "Notes", "fieldtype": "Text"},
+    {"fieldname": "created_by", "label": "Created By", "fieldtype": "Data"}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1},
+    {"role": "Accounts Manager", "read": 1}
+  ]
+}
