@@ -1,55 +1,52 @@
+import io, zipfile, json
 import frappe
 from frappe import _
-from .utils.integrity import canonicalize_doc, hash_snapshot, sign_hash
+from .utils.integrity import canonicalize_doc, hash_snapshot
 from .utils.timestamp_client import TimestampClient
+from .utils.signing import sign_bytes
 
-TSA = TimestampClient()
-
-def _make_snapshot(doc):
-    """Return canonicalized snapshot bytes and metadata dict"""
+def _make_snapshot_and_hash(doc):
     snap = canonicalize_doc(doc.as_dict())
-    h = hash_snapshot(snap)
-    return snap, h
+    s = frappe.get_single("AEAT Settings")
+    digest_b64 = hash_snapshot(snap, s.tsa_hash_algo or "sha256")
+    return snap, digest_b64
 
 @frappe.whitelist()
 def handle_sales_invoice_submit(doc, method=None):
-    """
-    Called by hook on Sales Invoice.on_submit
-    - create snapshot
-    - request timestamp (TSA) or sign locally
-    - create Invoice Evidence and link to Sales Invoice
-    """
     if isinstance(doc, str):
         doc = frappe.get_doc("Sales Invoice", doc)
 
-    # do not double-seal
-    if doc.get("seal_status") == "signed":
+    # Evitar doble sellado (idempotente)
+    if doc.get("seal_status") == "signed" and doc.get("seal_hash"):
         return
 
-    # 1) snapshot + hash
-    snap_bytes, h = _make_snapshot(doc)
+    # 1) Snapshot y hash (base64 del digest)
+    snap_bytes, digest_b64 = _make_snapshot_and_hash(doc)
 
-    # 2) request timestamp (TSA) and sign (or both)
-    tsa_token = TSA.request_timestamp(snap_bytes)  # may return None if not configured
+    # 2) Timestamp TSA (RFC3161)
+    tsa = TimestampClient()
+    tsa_token = tsa.request_timestamp(snap_bytes)
 
-    # 3) local signature placeholder (could be HSM or remote)
-    signature = sign_hash(h)
+    # 3) Firma con certificado (firma sobre los bytes de snapshot)
+    signature_b64, alg = sign_bytes(snap_bytes, (frappe.get_single("AEAT Settings").tsa_hash_algo or "sha256"))
 
-    # 4) create evidence doc
+    # 4) Guardar evidencia
     ev = frappe.get_doc({
         "doctype": "Invoice Evidence",
         "invoice": doc.name,
-        "snapshot_hash": h,
-        "snapshot_file": frappe.attach_print(doc.doctype, doc.name, file_name=f"{doc.name}_snapshot.json"),
-        "tsa_token": tsa_token,
-        "signature": signature,
-        "created_by": frappe.session.user
+        "snapshot_hash": digest_b64,
+        "snapshot_file": frappe.attach_print(doc.doctype, doc.name, file_name=f"{doc.name}_snapshot.json", print_format=None, print_letterhead=False, html=json.dumps(json.loads(snap_bytes.decode()), ensure_ascii=False)),
+        "tsa_token": frappe.as_json(tsa_token) if tsa_token else None,
+        "signature": signature_b64,
+        "event": "submit",
+        "notes": f"Algoritmo firma: {alg}"
     })
     ev.insert(ignore_permissions=True)
-    # 5) set link fields on Sales Invoice
-    doc.db_set("seal_hash", h)
+
+    # 5) Actualizar la factura
+    doc.db_set("seal_hash", digest_b64)
     doc.db_set("seal_timestamp", tsa_token.get("timestamp") if tsa_token else frappe.utils.now_datetime())
-    doc.db_set("seal_signature", signature)
+    doc.db_set("seal_signature", signature_b64)
     doc.db_set("seal_status", "signed")
     doc.db_set("seal_evidence", ev.name)
 
@@ -57,12 +54,11 @@ def handle_sales_invoice_submit(doc, method=None):
 def handle_sales_invoice_cancel(doc, method=None):
     if isinstance(doc, str):
         doc = frappe.get_doc("Sales Invoice", doc)
-    # record cancellation as new evidence
     ev = frappe.get_doc({
         "doctype": "Invoice Evidence",
         "invoice": doc.name,
         "event": "cancel",
-        "notes": f"Invoice cancelled by {frappe.session.user}"
+        "notes": f"Cancelado por {frappe.session.user}"
     })
     ev.insert(ignore_permissions=True)
     doc.db_set("seal_status", "voided")
@@ -71,22 +67,16 @@ def handle_sales_invoice_cancel(doc, method=None):
 def handle_sales_invoice_update_after_submit(doc, method=None):
     if isinstance(doc, str):
         doc = frappe.get_doc("Sales Invoice", doc)
-    # Create evidence entry for any post-submit changes (append-only)
     ev = frappe.get_doc({
         "doctype": "Invoice Evidence",
         "invoice": doc.name,
         "event": "update_after_submit",
-        "notes": f"Updated after submit by {frappe.session.user}"
+        "notes": f"Actualizado tras submit por {frappe.session.user}"
     })
     ev.insert(ignore_permissions=True)
 
 @frappe.whitelist(allow_guest=False)
 def export_aeat_package(invoice_names):
-    """
-    invoice_names: comma separated or list
-    Return a zip/JSON package ready for AEAT (minimal example)
-    """
-    import json, io, zipfile
     if isinstance(invoice_names, str):
         invoice_names = [n.strip() for n in invoice_names.split(",") if n.strip()]
 
@@ -95,11 +85,10 @@ def export_aeat_package(invoice_names):
     for name in invoice_names:
         doc = frappe.get_doc("Sales Invoice", name)
         snap = canonicalize_doc(doc.as_dict())
-        z.writestr(f"{name}.json", snap.decode() if isinstance(snap, bytes) else snap)
-        # include evidence if exists
+        z.writestr(f"{name}.json", snap.decode() if isinstance(snap, (bytes, bytearray)) else snap)
         if doc.get("seal_evidence"):
             ev = frappe.get_doc("Invoice Evidence", doc.seal_evidence)
-            z.writestr(f"{name}.evidence.txt", frappe.as_json(ev.as_dict()))
+            z.writestr(f"{name}.evidence.json", frappe.as_json(ev.as_dict(), indent=2))
     z.close()
     mem.seek(0)
     frappe.local.response.filename = f"aeat_package_{frappe.utils.nowdate()}.zip"
