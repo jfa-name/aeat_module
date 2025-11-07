@@ -2,7 +2,7 @@ app_name = "aeat_module"
 app_title = "Aeat Module"
 app_publisher = "Felipe Acosta"
 app_description = "AEAT VERI*FACTU support: snapshot, hash, timestamp & export"
-app_version = "0.2.0"
+app_version = "0.3.0"
 app_email = "soporte@jfa.name"
 app_license = "MIT"
 
@@ -19,5 +19,6 @@ doc_events = {
 }
 
 patches = [
-    "aeat_module.aeat_module.patches.v14.add_sales_invoice_seal_fields"
+    "aeat_module.aeat_module.patches.v14.add_sales_invoice_seal_fields",
+    "aeat_module.aeat_module.patches.v14.add_verifactu_fields"
 ]

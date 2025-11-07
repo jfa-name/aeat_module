@@ -1,0 +1,65 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-11-07 09:40:38.243961",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "developer_nif",
+  "software_name",
+  "software_id",
+  "software_version",
+  "contact_email"
+ ],
+ "fields": [
+  {
+   "fieldname": "developer_nif",
+   "fieldtype": "Data",
+   "label": "NIF Desarrollador"
+  },
+  {
+   "fieldname": "software_name",
+   "fieldtype": "Data",
+   "label": "Nombre del Software"
+  },
+  {
+   "fieldname": "software_id",
+   "fieldtype": "Data",
+   "label": "Identificador Software"
+  },
+  {
+   "fieldname": "software_version",
+   "fieldtype": "Data",
+   "label": "Versi\u00f3n"
+  },
+  {
+   "fieldname": "contact_email",
+   "fieldtype": "Data",
+   "label": "Email de contacto"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-11-07 09:40:38.243961",
+ "modified_by": "Administrator",
+ "module": "Aeat Module",
+ "name": "AEAT Developer Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

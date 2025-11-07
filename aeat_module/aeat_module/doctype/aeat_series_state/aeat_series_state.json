@@ -1,0 +1,63 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-11-07 09:48:52.015610",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "series_code",
+  "active",
+  "last_number",
+  "last_hash",
+  "last_sent_at",
+  "last_aeat_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "series_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Serie",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "active",
+   "fieldtype": "Check",
+   "label": "Activa"
+  },
+  {
+   "fieldname": "last_number",
+   "fieldtype": "Int",
+   "label": "\u00daltimo N\u00ba"
+  },
+  {
+   "fieldname": "last_hash",
+   "fieldtype": "Data",
+   "label": "\u00daltima Huella (VERI*FACTU)"
+  },
+  {
+   "fieldname": "last_sent_at",
+   "fieldtype": "Datetime",
+   "label": "\u00daltimo Env\u00edo"
+  },
+  {
+   "fieldname": "last_aeat_id",
+   "fieldtype": "Data",
+   "label": "\u00daltimo Id/CSV AEAT"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-11-07 09:48:52.015610",
+ "modified_by": "Administrator",
+ "module": "Aeat Module",
+ "name": "AEAT Series State",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

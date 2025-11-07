@@ -1,0 +1,246 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-11-07 09:52:38.654242",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "enabled",
+  "jurisdiction_sb",
+  "jurisdiction",
+  "enable_sif",
+  "enable_verifactu",
+  "verifactu_sb",
+  "environment",
+  "nif_emisor",
+  "verifactu_base_url_preprod",
+  "verifactu_base_url_prod",
+  "series_sb",
+  "series",
+  "override_crypto_sb",
+  "override_crypto",
+  "tsa_url",
+  "tsa_username",
+  "tsa_password",
+  "tsa_policy_oid",
+  "tsa_hash_algo",
+  "verify_tls",
+  "ca_bundle_path",
+  "signer_key_source",
+  "signer_private_key_path",
+  "signer_private_key_password",
+  "signer_private_key_file",
+  "site_config_key_name",
+  "signer_certificate_path",
+  "signer_algorithm"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "jurisdiction_sb",
+   "fieldtype": "Section Break",
+   "label": "Jurisdicci\u00f3n"
+  },
+  {
+   "default": "IVA (AEAT)",
+   "fieldname": "jurisdiction",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Jurisdicci\u00f3n Fiscal",
+   "options": "IVA (AEAT)\nIGIC (Canarias)\nIPSI (Ceuta/Melilla)\nForal (TicketBAI)\nOtra/No aplica",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_sif",
+   "fieldtype": "Check",
+   "label": "Activar SIF (integridad/inmutabilidad)"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_verifactu",
+   "fieldtype": "Check",
+   "label": "Activar VERI*FACTU para esta Company"
+  },
+  {
+   "fieldname": "verifactu_sb",
+   "fieldtype": "Section Break",
+   "label": "VERI*FACTU"
+  },
+  {
+   "default": "preprod",
+   "fieldname": "environment",
+   "fieldtype": "Select",
+   "label": "Entorno",
+   "options": "preprod\nprod"
+  },
+  {
+   "fieldname": "nif_emisor",
+   "fieldtype": "Data",
+   "label": "NIF Emisor"
+  },
+  {
+   "fieldname": "verifactu_base_url_preprod",
+   "fieldtype": "Data",
+   "label": "Base URL Preprod"
+  },
+  {
+   "fieldname": "verifactu_base_url_prod",
+   "fieldtype": "Data",
+   "label": "Base URL Prod"
+  },
+  {
+   "fieldname": "series_sb",
+   "fieldtype": "Section Break",
+   "label": "Series y Encadenamiento"
+  },
+  {
+   "fieldname": "series",
+   "fieldtype": "Table",
+   "label": "Series",
+   "options": "AEAT Series State"
+  },
+  {
+   "fieldname": "override_crypto_sb",
+   "fieldtype": "Section Break",
+   "label": "Override Firma/TSA por Company"
+  },
+  {
+   "default": "0",
+   "fieldname": "override_crypto",
+   "fieldtype": "Check",
+   "label": "Sobrescribir Firma/TSA de Global"
+  },
+  {
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "tsa_url",
+   "fieldtype": "Data",
+   "label": "TSA URL",
+   "mandatory_depends_on": "eval:doc.override_crypto"
+  },
+  {
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "tsa_username",
+   "fieldtype": "Data",
+   "label": "TSA Usuario"
+  },
+  {
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "tsa_password",
+   "fieldtype": "Password",
+   "label": "TSA Password"
+  },
+  {
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "tsa_policy_oid",
+   "fieldtype": "Data",
+   "label": "TSA Policy OID"
+  },
+  {
+   "default": "sha256",
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "tsa_hash_algo",
+   "fieldtype": "Select",
+   "label": "Hash",
+   "options": "sha256\nsha384\nsha512"
+  },
+  {
+   "default": "1",
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "verify_tls",
+   "fieldtype": "Check",
+   "label": "Verificar TLS"
+  },
+  {
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "ca_bundle_path",
+   "fieldtype": "Data",
+   "label": "CA Bundle"
+  },
+  {
+   "default": "Path",
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "signer_key_source",
+   "fieldtype": "Select",
+   "label": "Origen Clave Privada",
+   "options": "Path\nFile (Attach)\nSite Config"
+  },
+  {
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "signer_private_key_path",
+   "fieldtype": "Data",
+   "label": "Ruta Clave (PEM/PFX)"
+  },
+  {
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "signer_private_key_password",
+   "fieldtype": "Password",
+   "label": "Password Clave"
+  },
+  {
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "signer_private_key_file",
+   "fieldtype": "Attach",
+   "label": "Clave Privada (Attach)"
+  },
+  {
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "site_config_key_name",
+   "fieldtype": "Data",
+   "label": "Clave en site_config"
+  },
+  {
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "signer_certificate_path",
+   "fieldtype": "Data",
+   "label": "Ruta Certificado (PEM)"
+  },
+  {
+   "default": "RSA-PKCS1v15",
+   "depends_on": "eval:doc.override_crypto",
+   "fieldname": "signer_algorithm",
+   "fieldtype": "Select",
+   "label": "Algoritmo Firma",
+   "options": "RSA-PKCS1v15\nRSA-PSS\nECDSA"
+  },
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-07 13:21:19.655641",
+ "modified_by": "Administrator",
+ "module": "AEAT Module",
+ "name": "AEAT Company Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
