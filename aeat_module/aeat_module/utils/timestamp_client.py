@@ -9,6 +9,7 @@ except Exception:
     HAS_RFC3161 = False
 
 import requests
+from email.utils import parsedate_to_datetime
 
 
 class TimestampClient:
@@ -28,6 +29,20 @@ class TimestampClient:
             return self.s.ca_bundle_path
         return True
 
+    def _format_dt_for_db(self, dt):
+        """
+        Recibe un datetime objeto (aware o naive) o None y devuelve string
+        'YYYY-MM-DD HH:MM:SS' (o None).
+        """
+        try:
+            if dt is None:
+                return None
+            # si es string, no lo tocaremos aquí (llamador debería parsearlo),
+            # pero en esta función esperamos un datetime
+            return dt.strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            return None
+
     def request_timestamp(self, snapshot_bytes: bytes) -> Optional[Dict]:
         algo = (self.s.tsa_hash_algo or "sha256").lower()
         verify = self._verify_arg()
@@ -45,8 +60,11 @@ class TimestampClient:
                     policy_oid=self.s.tsa_policy_oid or None
                 )
                 tsr_bytes = client.timestamp(data=snapshot_bytes)
+                # No siempre se extrae la fecha fácilmente sin parsear el TSR; como fallback
+                # devolvemos la hora actual en formato DB (UTC local del servidor)
+                ts_str = self._format_dt_for_db(frappe.utils.now_datetime())
                 return {
-                    "timestamp": frappe.utils.now_datetime(),  # el TSR tiene el time-stamp internamente
+                    "timestamp": ts_str,
                     "tsa_response_der_b64": base64.b64encode(tsr_bytes).decode("ascii"),
                     "mode": "rfc3161"
                 }
@@ -60,8 +78,20 @@ class TimestampClient:
                 auth = (self.s.tsa_username, self.s.tsa_password)
             r = requests.post(self.s.tsa_url, data=snapshot_bytes, auth=auth, timeout=15, verify=verify)
             r.raise_for_status()
+
+            # Normalizar encabezado Date (ej: 'Tue, 11 Nov 2025 19:17:32 GMT')
+            date_hdr = r.headers.get("Date")
+            if date_hdr:
+                try:
+                    dt = parsedate_to_datetime(date_hdr)  # devuelve datetime
+                    ts_str = self._format_dt_for_db(dt)
+                except Exception:
+                    ts_str = self._format_dt_for_db(frappe.utils.now_datetime())
+            else:
+                ts_str = self._format_dt_for_db(frappe.utils.now_datetime())
+
             return {
-                "timestamp": r.headers.get("Date") or frappe.utils.now_datetime(),
+                "timestamp": ts_str,
                 "tsa_response_raw_b64": base64.b64encode(r.content).decode("ascii"),
                 "mode": "raw-post"
             }

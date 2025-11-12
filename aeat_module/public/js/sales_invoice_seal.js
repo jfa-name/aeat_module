@@ -8,7 +8,7 @@ frappe.ui.form.on('Sales Invoice', {
         if (frm.doc.docstatus===1) {
             frm.add_custom_button(__('Ver evidencia/validar sello'), function() {
                 frappe.call({
-                    method: 'aeat_module.api.export_aeat_package',
+                    method: 'aeat_module.aeat_module.api.export_aeat_package',
                     args: { invoice_names: frm.doc.name },
                     callback: function(r) {
                         // download handled by server response

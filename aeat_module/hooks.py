@@ -19,6 +19,6 @@ doc_events = {
 }
 
 patches = [
-    "aeat_module.aeat_module.patches.v14.add_sales_invoice_seal_fields",
-    "aeat_module.aeat_module.patches.v14.add_verifactu_fields"
+    "aeat_module.patches.v14.add_sales_invoice_seal_fields",
+    "aeat_module.patches.v14.add_verifactu_fields"
 ]

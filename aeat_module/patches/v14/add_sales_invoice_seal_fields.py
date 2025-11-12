@@ -9,17 +9,20 @@ def execute():
     - seal_status (Data)
     - seal_evidence (Link to Invoice Evidence)
     """
-    table = "tabSales Invoice"
+    doctype = "Sales Invoice"         # <-- use DocType name (no 'tab' prefix)
+    table = "tabSales Invoice"        # <-- physical table name for raw SQL
+
     try:
-        if not frappe.db.has_column(table, "seal_hash"):
+        # Use doctype when calling frappe.db.has_column
+        if not frappe.db.has_column(doctype, "seal_hash"):
             frappe.db.sql(f"ALTER TABLE `{table}` ADD COLUMN `seal_hash` TEXT")
-        if not frappe.db.has_column(table, "seal_timestamp"):
+        if not frappe.db.has_column(doctype, "seal_timestamp"):
             frappe.db.sql(f"ALTER TABLE `{table}` ADD COLUMN `seal_timestamp` DATETIME")
-        if not frappe.db.has_column(table, "seal_signature"):
+        if not frappe.db.has_column(doctype, "seal_signature"):
             frappe.db.sql(f"ALTER TABLE `{table}` ADD COLUMN `seal_signature` TEXT")
-        if not frappe.db.has_column(table, "seal_status"):
+        if not frappe.db.has_column(doctype, "seal_status"):
             frappe.db.sql(f"ALTER TABLE `{table}` ADD COLUMN `seal_status` VARCHAR(20)")
-        if not frappe.db.has_column(table, "seal_evidence"):
+        if not frappe.db.has_column(doctype, "seal_evidence"):
             frappe.db.sql(f"ALTER TABLE `{table}` ADD COLUMN `seal_evidence` VARCHAR(140)")
         frappe.db.commit()
     except Exception:
