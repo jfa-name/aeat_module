@@ -1,10 +1,43 @@
-# (Fragmento: reemplaza la función handle_sales_invoice_submit en tu api.py)
 import traceback
 import frappe
+import json
 from .utils.integrity import canonicalize_doc, hash_snapshot
 from .utils.timestamp_client import TimestampClient
 from .utils.signing import sign_bytes
 from .utils.company_context import get_company_context
+from .utils.integrity import canonicalize_doc, hash_snapshot
+
+def _compute_verifactu_chain_hash(doc, prev_hash_b64: str | None) -> str:
+    """
+    Calcula la 'huella' encadenada VERI*FACTU para una factura.
+    WARNING: Ajusta exactamente la lista de campos y su normalización
+    según la especificación AEAT. Esta función usa un enfoque genérico:
+    - crea un objeto con los campos relevantes en un orden determinista,
+    - incluye la huella anterior (prev_hash_b64) tal cual (o "" si none),
+    - aplica SHA-256 y devuelve Base64.
+    Modifica el conjunto de campos y las normalizaciones (fechas, decimales)
+    para cumplir estrictamente la especificación oficial.
+    """
+    # Campos básicos: adapta la selección y nombres exactos a la especificación AEAT
+    invoice_data = {
+        "serie": (doc.get("series") or doc.get("naming_series") or ""),
+        "numero": doc.get("name") or "",
+        "fecha": str(doc.get("posting_date") or ""),
+        "hora": str(doc.get("posting_time") or ""),
+        "nif_emisor": doc.get("company_tax_id") or doc.get("company") or "",
+        "nif_receptor": doc.get("tax_id") or "",
+        "total": format(doc.get("grand_total") or 0, "f"),
+        "moneda": doc.get("currency") or "",
+        "prev_huella": prev_hash_b64 or ""
+    }
+
+    # Si necesitas incluir impuestos desglosados, líneas, etc. agrégalos aquí.
+    # Asegúrate de normalizar decimales y fechas EXACTAMENTE como exige AEAT.
+
+    # Serializar de forma determinista (sin espacios)
+    base_string = json.dumps(invoice_data, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    # Usa sha256 para la huella encadenada (ajusta si AEAT exige otro)
+    return hash_snapshot(base_string, "sha256")
 
 def handle_sales_invoice_submit(doc, method=None):
     if isinstance(doc, str):
@@ -99,6 +132,14 @@ def handle_sales_invoice_submit(doc, method=None):
                         break
                 # calcula vf_hash (usa tu función)
                 vf_hash = _compute_verifactu_chain_hash(doc, prev_hash)
+                doc.db_set("verifactu_prev_hash", prev_hash)
+                doc.db_set("verifactu_hash", vf_hash)
+                try:
+                    from .api_verifactu import submit_to_verifactu
+                    submit_to_verifactu(doc, vf_hash, prev_hash)
+                except Exception as e:
+                    frappe.log_error(message=f"VERIFACTU submission failed for {doc.name}: {e}\n{traceback.format_exc()}", title="AEAT Debug")
+                    frappe.db.set_value("Sales Invoice", doc.name, "verifactu_status", "submit_error")
                 frappe.db.set_value("Sales Invoice", doc.name, "verifactu_prev_hash", prev_hash)
                 frappe.db.set_value("Sales Invoice", doc.name, "verifactu_hash", vf_hash)
                 # TODO: enviar a AEAT (client), guardar verifactu_id, verifactu_qr_url, verifactu_status
