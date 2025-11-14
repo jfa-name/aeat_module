@@ -1,0 +1,8 @@
+# Copyright (c) 2025, Felipe Acosta and contributors
+# For license information, please see license.txt
+
+# import frappe
+from frappe.model.document import Document
+
+class AEATCompanySettings(Document):
+	pass

@@ -1,0 +1,116 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-11-07 17:02:49.966519",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "invoice",
+  "method",
+  "endpoint",
+  "payload_json",
+  "status_code",
+  "response_json",
+  "verifactu_id",
+  "status_text",
+  "error_code",
+  "error_message"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "invoice",
+   "fieldtype": "Data",
+   "label": "Invoice / Id"
+  },
+  {
+   "fieldname": "method",
+   "fieldtype": "Data",
+   "label": "HTTP Method"
+  },
+  {
+   "fieldname": "endpoint",
+   "fieldtype": "Data",
+   "label": "Endpoint"
+  },
+  {
+   "fieldname": "payload_json",
+   "fieldtype": "Long Text",
+   "label": "Payload (JSON)"
+  },
+  {
+   "fieldname": "status_code",
+   "fieldtype": "Int",
+   "label": "HTTP Status"
+  },
+  {
+   "fieldname": "response_json",
+   "fieldtype": "Long Text",
+   "label": "Response (raw)"
+  },
+  {
+   "fieldname": "verifactu_id",
+   "fieldtype": "Data",
+   "label": "Id/CSV AEAT"
+  },
+  {
+   "fieldname": "status_text",
+   "fieldtype": "Data",
+   "label": "Estado"
+  },
+  {
+   "fieldname": "error_code",
+   "fieldtype": "Data",
+   "label": "C\u00f3digo Error"
+  },
+  {
+   "fieldname": "error_message",
+   "fieldtype": "Data",
+   "label": "Mensaje Error"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-07 17:02:49.966519",
+ "modified_by": "Administrator",
+ "module": "AEAT Module",
+ "name": "AEAT Transmission Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

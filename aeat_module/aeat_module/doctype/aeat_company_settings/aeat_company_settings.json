@@ -1,0 +1,226 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-11-07 17:15:38.706793",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "jurisdiction",
+  "enable_sif",
+  "enable_verifactu",
+  "environment",
+  "nif_emisor",
+  "verifactu_base_url_preprod",
+  "verifactu_base_url_prod",
+  "verifactu_api_path_send",
+  "verifactu_api_path_cancel",
+  "verifactu_api_path_status",
+  "series",
+  "verifactu_auth_sb",
+  "verifactu_auth_mode",
+  "mtls_client_cert_path",
+  "mtls_client_key_path",
+  "mtls_client_key_password",
+  "mtls_client_pfx_path",
+  "mtls_client_pfx_file",
+  "oauth_token_url",
+  "oauth_client_id",
+  "oauth_client_secret",
+  "oauth_scope",
+  "tls_sb",
+  "verifactu_verify_tls",
+  "verifactu_ca_bundle"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "IVA (AEAT)",
+   "fieldname": "jurisdiction",
+   "fieldtype": "Select",
+   "label": "Jurisdicci\u00f3n Fiscal",
+   "options": "IVA (AEAT)\nIGIC (Canarias)\nIPSI (Ceuta/Melilla)\nForal (TicketBAI)\nOtra/No aplica"
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_sif",
+   "fieldtype": "Check",
+   "label": "Activar SIF (integridad/inmutabilidad)"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_verifactu",
+   "fieldtype": "Check",
+   "label": "Activar VERI*FACTU"
+  },
+  {
+   "default": "preprod",
+   "depends_on": "eval:doc.enable_verifactu",
+   "fieldname": "environment",
+   "fieldtype": "Select",
+   "label": "Entorno",
+   "options": "preprod\nprod"
+  },
+  {
+   "depends_on": "eval:doc.enable_verifactu",
+   "fieldname": "nif_emisor",
+   "fieldtype": "Data",
+   "label": "NIF Emisor"
+  },
+  {
+   "depends_on": "eval:doc.enable_verifactu",
+   "fieldname": "verifactu_base_url_preprod",
+   "fieldtype": "Data",
+   "label": "Base URL Preprod"
+  },
+  {
+   "depends_on": "eval:doc.enable_verifactu",
+   "fieldname": "verifactu_base_url_prod",
+   "fieldtype": "Data",
+   "label": "Base URL Prod"
+  },
+  {
+   "default": "/api/verifactu/v1/emitidas",
+   "depends_on": "eval:doc.enable_verifactu",
+   "fieldname": "verifactu_api_path_send",
+   "fieldtype": "Data",
+   "label": "Path Env\u00edo (alta)"
+  },
+  {
+   "default": "/api/verifactu/v1/emitidas/anulacion",
+   "depends_on": "eval:doc.enable_verifactu",
+   "fieldname": "verifactu_api_path_cancel",
+   "fieldtype": "Data",
+   "label": "Path Anulaci\u00f3n"
+  },
+  {
+   "default": "/api/verifactu/v1/estado",
+   "depends_on": "eval:doc.enable_verifactu",
+   "fieldname": "verifactu_api_path_status",
+   "fieldtype": "Data",
+   "label": "Path Estado"
+  },
+  {
+   "fieldname": "series",
+   "fieldtype": "Table",
+   "label": "Series (encadenamiento)",
+   "options": "AEAT Series State"
+  },
+  {
+   "fieldname": "verifactu_auth_sb",
+   "fieldtype": "Section Break",
+   "label": "Autenticaci\u00f3n VERI*FACTU"
+  },
+  {
+   "default": "mTLS",
+   "depends_on": "eval:doc.enable_verifactu",
+   "fieldname": "verifactu_auth_mode",
+   "fieldtype": "Select",
+   "label": "Modo Auth",
+   "options": "mTLS\nOAuth2"
+  },
+  {
+   "depends_on": "eval:doc.verifactu_auth_mode=='mTLS' && doc.enable_verifactu",
+   "fieldname": "mtls_client_cert_path",
+   "fieldtype": "Data",
+   "label": "mTLS: Cert Path (PEM)"
+  },
+  {
+   "depends_on": "eval:doc.verifactu_auth_mode=='mTLS' && doc.enable_verifactu",
+   "fieldname": "mtls_client_key_path",
+   "fieldtype": "Data",
+   "label": "mTLS: Key Path (PEM)"
+  },
+  {
+   "depends_on": "eval:doc.verifactu_auth_mode=='mTLS' && doc.enable_verifactu",
+   "fieldname": "mtls_client_key_password",
+   "fieldtype": "Password",
+   "label": "mTLS: Password Key"
+  },
+  {
+   "depends_on": "eval:doc.verifactu_auth_mode=='mTLS' && doc.enable_verifactu",
+   "fieldname": "mtls_client_pfx_path",
+   "fieldtype": "Data",
+   "label": "mTLS: PFX Path (opcional)"
+  },
+  {
+   "depends_on": "eval:doc.verifactu_auth_mode=='mTLS' && doc.enable_verifactu",
+   "fieldname": "mtls_client_pfx_file",
+   "fieldtype": "Attach",
+   "label": "mTLS: PFX (Attach)"
+  },
+  {
+   "depends_on": "eval:doc.verifactu_auth_mode=='OAuth2' && doc.enable_verifactu",
+   "fieldname": "oauth_token_url",
+   "fieldtype": "Data",
+   "label": "OAuth2: Token URL"
+  },
+  {
+   "depends_on": "eval:doc.verifactu_auth_mode=='OAuth2' && doc.enable_verifactu",
+   "fieldname": "oauth_client_id",
+   "fieldtype": "Data",
+   "label": "OAuth2: Client ID"
+  },
+  {
+   "depends_on": "eval:doc.verifactu_auth_mode=='OAuth2' && doc.enable_verifactu",
+   "fieldname": "oauth_client_secret",
+   "fieldtype": "Password",
+   "label": "OAuth2: Client Secret"
+  },
+  {
+   "depends_on": "eval:doc.verifactu_auth_mode=='OAuth2' && doc.enable_verifactu",
+   "fieldname": "oauth_scope",
+   "fieldtype": "Data",
+   "label": "OAuth2: Scope"
+  },
+  {
+   "fieldname": "tls_sb",
+   "fieldtype": "Section Break",
+   "label": "TLS/CA"
+  },
+  {
+   "default": "1",
+   "fieldname": "verifactu_verify_tls",
+   "fieldtype": "Check",
+   "label": "Verificar TLS"
+  },
+  {
+   "fieldname": "verifactu_ca_bundle",
+   "fieldtype": "Data",
+   "label": "CA Bundle Path"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-07 17:15:38.706793",
+ "modified_by": "Administrator",
+ "module": "AEAT Module",
+ "name": "AEAT Company Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
