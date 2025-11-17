@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- editado con XMLSpy v2019 sp1 (x64) (http://www.altova.com) por Puesto de Trabajo (Agencia Estatal de Administracion Tributaria ((AEAT))) -->
 <!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by PC Corporativo (AGENCIA TRIBUTARIA) -->
 <schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:sfLR="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd" xmlns:sf="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd" targetNamespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd" elementFormDefault="qualified">
-	<import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd" schemaLocation="SuministroInformacion.xsd"/>
+	<import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd" schemaLocation="file:///home/develop/workspace/baygroup/apps/docs/SuministroInformacion.xsd.sanitized.imports_rewritten"/>
 	<element name="RegFactuSistemaFacturacion">
 		<complexType>
 			<sequence>
