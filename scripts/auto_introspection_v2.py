@@ -214,35 +214,103 @@ def build_example_from_type(xsd_type, seen=None, depth=0):
     return example_for_simple(xsd_type)
 
 def insert_by_path(payload, path_list, value):
-    """Inserta value en payload siguiendo path_list"""
+    """
+    Inserta `value` en `payload` siguiendo path_list.
+    - Si encuentra valores primitivos en el camino que deben ser contenedores,
+      los reemplaza por dicts (preservando el valor antiguo bajo '_value' si queremos).
+    - Si encuentra listas, trabaja sobre el primer elemento.
+    - path_list no debe contener el nombre de la operación (pero si lo hace, se lo quitamos).
+    Devuelve True si se inserta correctamente.
+    """
     if not path_list:
         return False
-    if len(path_list) > 1 and path_list[0].lower().startswith("reg"):
-        path_list = path_list[1:]
-    
+
+    # strip root operation name like 'RegFactuSistemaFacturacion' si aparece
+    if len(path_list) > 0 and path_list[0].lower().startswith("reg"):
+        path = path_list[1:]
+    else:
+        path = list(path_list)
+
+    if not path:
+        return False
+
+    parent = None
+    parent_key = None
     current = payload
-    for i, key in enumerate(path_list):
-        if i == len(path_list) - 1:
-            if isinstance(current, list):
-                if not current:
-                    current.append({})
-                current[0][key] = value
-            else:
-                current[key] = value
-            return True
-        
+
+    for i, key in enumerate(path):
+        last = (i == len(path) - 1)
+
+        # If current is a list, operate on its first element (create one if empty)
         if isinstance(current, list):
             if not current:
                 current.append({})
             current = current[0]
-        
-        if key not in current or current[key] is None:
+
+        # If current is not a dict at this point, replace it with a dict
+        # (preserve previous primitive value if you want under '_value'; here we overwrite)
+        if not isinstance(current, dict):
+            # try to replace in parent
+            if parent is not None:
+                if isinstance(parent, list):
+                    if not parent:
+                        parent.append({})
+                    parent[0][parent_key] = {}
+                    current = parent[0][parent_key]
+                else:
+                    parent[parent_key] = {}
+                    current = parent[parent_key]
+            else:
+                # we're at the root and payload isn't a dict (unlikely), just bail
+                return False
+
+        if last:
+            # set the final value
+            current[key] = value
+            return True
+
+        # not last: ensure there is a container to descend into
+        next_item = current.get(key)
+        if next_item is None:
+            # create dict container (could be array - but we can't know here)
             current[key] = {}
+            parent = current
+            parent_key = key
+            current = current[key]
+            continue
+
+        # if next_item is primitive, replace with dict (preserve the primitive if desired)
+        if not isinstance(next_item, (dict, list)):
+            # preserve old value under a special key if you want:
+            old = next_item
+            current[key] = {}
+            # optionally keep old: current[key]['_value'] = old
+            parent = current
+            parent_key = key
+            current = current[key]
+            continue
+
+        # if next_item is list, descend into its first element (ensure not empty)
+        if isinstance(next_item, list):
+            if not next_item:
+                next_item.append({})
+            parent = current
+            parent_key = key
+            current = next_item[0]
+            continue
+
+        # else it's a dict: descend
+        parent = current
+        parent_key = key
         current = current[key]
+
     return False
+
 
 def extract_missing_element_name(exc_text):
     """Parsea error 'Missing element NAME (PATH)'"""
+    import re
+    from re import search
     m = re.search(r"Missing element\s+([A-Za-z0-9_:.-]+)\s*\(([^)]+)\)", exc_text)
     if m:
         elem = m.group(1)
