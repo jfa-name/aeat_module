@@ -34,7 +34,8 @@ LOCAL_XSD_MAP = {
 
 WSDL_PATH = Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.localized.wsdl")
 CERT = ("/etc/ssl/aeat/cert.pem", "/etc/ssl/aeat/key.pem")
-VERIFY = "/etc/ssl/aeat/ca-bundle.pem"
+CA_BUNDLE = "/etc/ssl/aeat/ca-bundle.pem"
+
 USE_PREPROD = True
 HOST_MAP = {
     "www1.agenciatributaria.gob.es": "prewww1.aeat.es",
@@ -337,7 +338,7 @@ print(f"\nUsing WSDL: {wsdl_uri}")
 
 session = requests.Session()
 session.cert = CERT
-session.verify = VERIFY
+session.verify = CA_BUNDLE
 
 transport = LocalMappingTransport(
     local_map=LOCAL_XSD_MAP,
