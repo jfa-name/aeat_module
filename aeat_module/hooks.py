@@ -20,33 +20,34 @@ doc_events = {
 
 fixtures = [
     {
-        "doctype":"Custom Field", "filters":{"fieldname":["in",["Sales Invoice.aeat_seal_hash"]]}
+    "doctype": "Custom Field",
+        "filters": [
+            [
+                "name",
+                "in",
+                [
+                    "Company.aeat_nif_emitter",
+                    "Company.aeat_environment",
+                    "Company.aeat_series",
+                    "Company.aeat_signer_certificate",
+                    "Company.aeat_signer_key_source",
+                    "Company.aeat_signer_key_path",
+                    "Company.aeat_signer_key_file",
+                    "Company.aeat_signer_key_password",
+                    "Company.aeat_tsa_url",
+                    "Company.aeat_tsa_username",
+                    "Company.aeat_tsa_password",
+                    "Company.aeat_tsa_policy_oid",
+                    "Company.aeat_tsa_hash_algo",
+                    "Company.aeat_verify_tls",
+                    "Company.aeat_ca_bundle_path",
+                    "Sales Invoice.aeat_seal_hash",
+                    "Sales Invoice.aeat_seal_timestamp",
+                    "Sales Invoice.aeat_seal_signature",
+                    "Sales Invoice.aeat_seal_status",
+                    "Sales Invoice.aeat_seal_evidence",
+                ],
+            ]
+        ],
     }
-]
-
-# fixtures = [
-#     {
-#     "doctype": "Custom Field",
-#         "filters": [
-#             [
-#                 "name",
-#                 "in",
-#                 [
-#                     "Sales Invoice.seal_hash",
-#                     "Sales Invoice.seal_timestamp",
-#                     "Sales Invoice.seal_signature",
-#                     "Sales Invoice.seal_status",
-#                     "Sales Invoice.seal_evidence",
-#                     # "Sales Invoice.aeat_verifactu_id",
-#                     # "Sales Invoice.aeat_verifactu_status",
-#                     # "Sales Invoice.aeat_verifactu_xml_exported",
-#                 ],
-#             ]
-#         ],
-#     }
-# ]
-
-patches = [
-    "aeat_module.patches.v14.add_sales_invoice_seal_fields",
-    "aeat_module.patches.v14.add_verifactu_fields"
 ]

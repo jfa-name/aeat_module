@@ -4,29 +4,31 @@
   "module": "AEAT Module",
   "istable": 0,
   "issingle": 1,
-  "custom": 0,
+  "custom": 1,
   "editable_grid": 0,
   "fields": [
-    { "fieldname": "section_tsa", "label": "TSA (RFC3161)", "fieldtype": "Section Break" },
-    { "fieldname": "is_production", "label": "Producción", "fieldtype": "Check", "default": "0" },
-    { "fieldname": "tsa_url", "label": "TSA URL", "fieldtype": "Data", "reqd": 1 },
-    { "fieldname": "tsa_username", "label": "TSA Usuario (opcional)", "fieldtype": "Data" },
-    { "fieldname": "tsa_password", "label": "TSA Password (opcional)", "fieldtype": "Password" },
-    { "fieldname": "tsa_policy_oid", "label": "TSA Policy OID (opcional)", "fieldtype": "Data" },
-    { "fieldname": "tsa_hash_algo", "label": "Hash Algoritmo", "fieldtype": "Select", "options": "sha256\nsha384\nsha512", "default": "sha256" },
-    { "fieldname": "verify_tls", "label": "Verificar TLS", "fieldtype": "Check", "default": "1" },
-    { "fieldname": "ca_bundle_path", "label": "Ruta CA bundle (opcional)", "fieldtype": "Data" },
-
-    { "fieldname": "section_sign", "label": "Firma Digital (Cert/Clave)", "fieldtype": "Section Break" },
-    { "fieldname": "signer_key_source", "label": "Origen Clave Privada", "fieldtype": "Select", "options": "Path\nFile (Attach)\nSite Config", "default": "Path" },
-    { "fieldname": "signer_private_key_path", "label": "Ruta Clave Privada (PEM/PFX)", "fieldtype": "Data" },
-    { "fieldname": "signer_private_key_password", "label": "Password Clave Privada", "fieldtype": "Password" },
-    { "fieldname": "signer_private_key_file", "label": "Clave Privada (Attach, privado)", "fieldtype": "Attach", "hidden": 0 },
-    { "fieldname": "site_config_key_name", "label": "Nombre clave en site_config (ruta o contenido)", "fieldtype": "Data" },
-    { "fieldname": "signer_certificate_path", "label": "Ruta Certificado Público (PEM)", "fieldtype": "Data" },
-    { "fieldname": "signer_algorithm", "label": "Algoritmo de Firma", "fieldtype": "Select", "options": "RSA-PKCS1v15\nRSA-PSS\nECDSA", "default": "RSA-PKCS1v15" }
+    { "fieldname": "cert_path", "label": "Certificate Path", "fieldtype": "Data" },
+    { "fieldname": "key_path", "label": "Key Path", "fieldtype": "Data" },
+    { "fieldname": "key_passphrase", "label": "Key Passphrase", "fieldtype": "Password" },
+    { "fieldname": "use_pkcs12", "label": "Use PKCS12 Format", "fieldtype": "Check" },
+    { "fieldname": "verifactu_endpoint_test", "label": "Verifactu Endpoint (Test)", "fieldtype": "Data" },
+    { "fieldname": "verifactu_endpoint_prod", "label": "Verifactu Endpoint (Prod)", "fieldtype": "Data" },
+    { "fieldname": "verifactu_endpoint_preprod", "label": "Verifactu Endpoint (Preprod)", "fieldtype": "Data" },
+    { "fieldname": "environment_default", "label": "Environment Default", "fieldtype": "Select", "options": "Preprod\nProd" },
+    { "fieldname": "verify_tls", "label": "Verify TLS", "fieldtype": "Check" },
+    { "fieldname": "default_tipo_huella", "label": "Default Tipo Huella", "fieldtype": "Data" },
+    { "fieldname": "default_retry_count", "label": "Default Retry Count", "fieldtype": "Int" },
+    { "fieldname": "retry_backoff_secs", "label": "Retry Backoff Seconds", "fieldtype": "Int" },
+    { "fieldname": "log_folder", "label": "Log Folder", "fieldtype": "Data" },
+    { "fieldname": "wsdl_path", "label": "WSDL Path", "fieldtype": "Data" },
+    { "fieldname": "wsdl_path_test", "label": "WSDL Path (Test)", "fieldtype": "Data" },
+    { "fieldname": "ca_bundle_path", "label": "CA Bundle Path", "fieldtype": "Data" },
+    { "fieldname": "tsa_url", "label": "TSA URL", "fieldtype": "Data" },
+    { "fieldname": "default_idversion", "label": "Default IDVersion", "fieldtype": "Data" }
   ],
   "permissions": [
-    { "role": "System Manager", "read": 1, "write": 1, "create": 1 }
+    { "role": "System Manager", "read": 1, "write": 1, "create": 1 },
+    { "role": "Account Manager", "read": 1 },
+    { "role": "Auditor", "read": 1 }
   ]
 }
