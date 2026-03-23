@@ -6,6 +6,8 @@ app_version = "0.3.0"
 app_email = "soporte@jfa.name"
 app_license = "MIT"
 
+required_apps = ["frappe", "erpnext"]
+
 doctype_js = {
     "Sales Invoice": "public/js/sales_invoice_seal.js"
 }
