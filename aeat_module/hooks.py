@@ -8,6 +8,16 @@ app_license = "MIT"
 
 required_apps = ["frappe", "erpnext"]
 
+fixtures = [
+    {
+        "doctype": "Custom Field",
+        "filters": [["dt", "=", "Sales Invoice"], ["fieldname", "in", [
+            "seal_hash", "seal_timestamp", "seal_signature", "seal_status", "seal_evidence",
+            "verifactu_prev_hash", "verifactu_hash", "verifactu_id", "verifactu_qr_url", "verifactu_status"
+        ]]]
+    }
+]
+
 doctype_js = {
     "Sales Invoice": "public/js/sales_invoice_seal.js"
 }
@@ -21,6 +31,10 @@ doc_events = {
 }
 
 patches = [
-    "aeat_module.patches.v14.add_sales_invoice_seal_fields",
-    "aeat_module.patches.v14.add_verifactu_fields"
+    # v14 patches: kept for reference; already executed on pre-v16 installs.
+    # "aeat_module.patches.v14.add_sales_invoice_seal_fields",
+    # "aeat_module.patches.v14.add_verifactu_fields",
+
+    # v16: install Custom Fields via Frappe API (idempotent)
+    "aeat_module.patches.v16.install_sales_invoice_custom_fields",
 ]
