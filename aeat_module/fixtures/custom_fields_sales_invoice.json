@@ -2,6 +2,7 @@
   {
     "doctype": "Custom Field",
     "dt": "Sales Invoice",
+    "name": "Sales Invoice-seal_hash",
     "fieldname": "seal_hash",
     "label": "Seal Hash",
     "fieldtype": "Data",
@@ -13,6 +14,7 @@
   {
     "doctype": "Custom Field",
     "dt": "Sales Invoice",
+    "name": "Sales Invoice-seal_timestamp",
     "fieldname": "seal_timestamp",
     "label": "Seal Timestamp",
     "fieldtype": "Datetime",
@@ -24,6 +26,7 @@
   {
     "doctype": "Custom Field",
     "dt": "Sales Invoice",
+    "name": "Sales Invoice-seal_signature",
     "fieldname": "seal_signature",
     "label": "Seal Signature",
     "fieldtype": "Text",
@@ -35,6 +38,7 @@
   {
     "doctype": "Custom Field",
     "dt": "Sales Invoice",
+    "name": "Sales Invoice-seal_status",
     "fieldname": "seal_status",
     "label": "Seal Status",
     "fieldtype": "Select",
@@ -47,6 +51,7 @@
   {
     "doctype": "Custom Field",
     "dt": "Sales Invoice",
+    "name": "Sales Invoice-seal_evidence",
     "fieldname": "seal_evidence",
     "label": "Seal Evidence",
     "fieldtype": "Link",
@@ -59,6 +64,7 @@
   {
     "doctype": "Custom Field",
     "dt": "Sales Invoice",
+    "name": "Sales Invoice-verifactu_prev_hash",
     "fieldname": "verifactu_prev_hash",
     "label": "VERI*FACTU Prev Hash",
     "fieldtype": "Text",
@@ -70,6 +76,7 @@
   {
     "doctype": "Custom Field",
     "dt": "Sales Invoice",
+    "name": "Sales Invoice-verifactu_hash",
     "fieldname": "verifactu_hash",
     "label": "VERI*FACTU Hash",
     "fieldtype": "Text",
@@ -81,6 +88,7 @@
   {
     "doctype": "Custom Field",
     "dt": "Sales Invoice",
+    "name": "Sales Invoice-verifactu_id",
     "fieldname": "verifactu_id",
     "label": "VERI*FACTU Id/CSV",
     "fieldtype": "Data",
@@ -91,6 +99,7 @@
   {
     "doctype": "Custom Field",
     "dt": "Sales Invoice",
+    "name": "Sales Invoice-verifactu_qr_url",
     "fieldname": "verifactu_qr_url",
     "label": "VERI*FACTU QR URL",
     "fieldtype": "Text",
@@ -102,6 +111,7 @@
   {
     "doctype": "Custom Field",
     "dt": "Sales Invoice",
+    "name": "Sales Invoice-verifactu_status",
     "fieldname": "verifactu_status",
     "label": "VERI*FACTU Status",
     "fieldtype": "Select",
