@@ -74,8 +74,8 @@
     {
       "fieldname": "locked_by",
       "label": "Locked By",
-      "fieldtype": "Link",
-      "options": "User",
+      "fieldtype": "Data",
+      "read_only": 1,
       "description": "Worker that currently holds the lock"
     },
     {
@@ -92,7 +92,8 @@
     {
       "fieldname": "created_at",
       "label": "Created At",
-      "fieldtype": "Datetime"
+      "fieldtype": "Datetime",
+      "default": "Now"
     },
     {
       "fieldname": "updated_at",

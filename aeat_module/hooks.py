@@ -12,9 +12,10 @@ doctype_js = {
 
 doc_events = {
     "Sales Invoice": {
-        "on_submit": "aeat_module.aeat_module.api.handle_sales_invoice_submit",
-        "on_cancel": "aeat_module.aeat_module.api.handle_sales_invoice_cancel",
-        "on_update_after_submit": "aeat_module.aeat_module.api.handle_sales_invoice_update_after_submit",
+        # "on_submit": "aeat_module.aeat_module.api.handle_sales_invoice_submit",
+        # "on_cancel": "aeat_module.aeat_module.api.handle_sales_invoice_cancel",
+        # "on_update_after_submit": "aeat_module.aeat_module.api.handle_sales_invoice_update_after_submit",
+        "on_submit": "aeat_module.aeat_module.hooks_sales_invoice.on_submit"
     }
 }
 

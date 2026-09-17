@@ -2,20 +2,16 @@
 """
 sign_and_send.py
 
-Flujo completo:
- - crea mensaje (create_message) para RegFactuSistemaFacturacion
- - calcula huella según cadena esperada por AEAT (SHA256 HEX)
- - inserta huella, firma (xmlsec) y envía por mTLS
- - si AEAT responde con RegistroDuplicado / 2007 (primer registro incorrecto),
-   hace una consulta automática (ConsultaFactuSistemaFacturacion) usando
-   IdPeticionRegistroDuplicado para recuperar los datos de la factura anterior,
-   rellena Encadenamiento.RegistroAnterior con IDEmisorFactura/NumSerieFactura/FechaExpedicionFactura/Huella
-   y reintenta enviar (solo 1 reintento automático).
- - guarda trazas en /tmp para depuración.
-
-Notas:
- - Ajusta rutas WSDL/XSD/certificados si es necesario.
- - Requiere python-xmlsec o xmlsec1 CLI para firmar; requests para mTLS.
+Implementa process_queue_item(queue_item_name) para ser llamado por el worker.
+Flujo:
+ 1. Cargar Queue Item y Sales Invoice
+ 2. Mapear Sales Invoice -> payload AEAT
+ 3. Calcular huella
+ 4. Crear XML (create_message)
+ 5. Firmar con xmlsec
+ 6. Enviar por mTLS
+ 7. Procesar respuesta y actualizar Queue Item
+ 8. Manejar reintentos automáticos si es necesario
 """
 import io
 import json
@@ -23,8 +19,10 @@ import hashlib
 import base64
 import subprocess
 import time
+import os
 from pathlib import Path
 from pprint import pformat
+from datetime import datetime
 
 from lxml import etree
 
@@ -33,7 +31,14 @@ from zeep import Client, Settings, helpers
 from zeep.transports import Transport
 from zeep.plugins import HistoryPlugin
 
-# try import xmlsec; if not available we will fallback to xmlsec1 CLI
+# Import frappe only when running inside Frappe context
+try:
+    import frappe
+    FRAPPE_AVAILABLE = True
+except ImportError:
+    FRAPPE_AVAILABLE = False
+
+# try import xmlsec
 try:
     import xmlsec
     XMLSEC_AVAILABLE = True
@@ -41,7 +46,7 @@ except Exception:
     XMLSEC_AVAILABLE = False
 
 # --------------------------
-# CONFIG - ajusta según tu entorno
+# CONFIG
 # --------------------------
 WSDL_PATH = Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.localized.wsdl")
 DOCS_DIRS = [
@@ -57,24 +62,13 @@ LOCAL_XSD_MAP = {
     "xmldsig-core-schema.xsd.sanitized": DOCS_DIRS[1] / "xmldsig-core-schema.xsd.sanitized",
     "SuministroInformacion.xsd": DOCS_DIRS[0] / "SuministroInformacion.xsd",
 }
-CERT = "/etc/ssl/aeat/cert.pem"
-KEY = "/etc/ssl/aeat/key.pem"
-CA_BUNDLE = "/etc/ssl/aeat/ca-bundle.pem"
-USE_PREPROD = True
 
-# Configuración de factura
-IS_FIRST_INVOICE = False  # Cambiar a False si no es la primera factura
-
-# Output files (tmp)
-TO_SIGN_FILE = Path("/tmp/to_sign.xml")
-SIGNED_FILE = Path("/tmp/signed.xml")
-LAST_SENT = Path("/tmp/aeat_last_sent.xml")
-LAST_RECEIVED = Path("/tmp/aeat_last_received.xml")
-LAST_RECEIVED_JSON = Path("/tmp/aeat_last_received.json")
-XMLSEC_CLI_LOG = Path("/tmp/xmlsec.log")
+# Paths de trazas - usar /var/log/aeat/ si existe, sino /tmp/
+TRACE_DIR = Path("/var/log/aeat") if Path("/var/log/aeat").exists() else Path("/tmp")
+TRACE_DIR.mkdir(parents=True, exist_ok=True)
 
 # --------------------------
-# HELPER: Find xmldsig
+# HELPERS
 # --------------------------
 def find_xmldsig_sanitized(docs_dirs):
     candidates = ["xmldsig-core-schema.xsd.sanitized", "xmldsig-core-schema.xsd"]
@@ -87,9 +81,6 @@ def find_xmldsig_sanitized(docs_dirs):
 
 XSD_SAN_PATH = find_xmldsig_sanitized(DOCS_DIRS)
 
-# --------------------------
-# LocalMappingTransport (Zeep)
-# --------------------------
 class LocalMappingTransport(Transport):
     def __init__(self, local_map=None, docs_dirs=None, xsd_san_path=None, *args, **kwargs):
         from pathlib import Path
@@ -101,8 +92,7 @@ class LocalMappingTransport(Transport):
     def _collapse_file_scheme(self, s):
         import re
         collapsed = re.sub(r'(file:/*)+', 'file:///', s)
-        collapsed = re.sub(r'file://+', 'file:///', collapsed)
-        return collapsed
+        return re.sub(r'file://+', 'file:///', collapsed)
 
     def _find_local_by_basename(self, basename):
         p = self.local_map.get(basename)
@@ -153,12 +143,10 @@ class LocalMappingTransport(Transport):
                 return self.xsd_san_path.read_bytes()
             raise
 
-# --------------------------
-# Helpers: huella, xml signing, utils
-# --------------------------
 def compute_huella_verifactu_payload(payload):
     """
-    Build the AEAT input string and return SHA256 hex uppercase.
+    Build AEAT input string and return SHA256 hex uppercase.
+    Formato: IDEmisorFactura=X&NumSerieFactura=Y&...
     """
     r = payload["RegistroFactura"][0]["RegistroAlta"]
     idfac = r["IDFactura"]["IDEmisorFactura"]
@@ -190,21 +178,16 @@ def compute_huella_verifactu_payload(payload):
         f"FechaHoraHusoGenRegistro={fechor}"
     ]
     input_str = "&".join(parts)
-    print("Huella input string:", input_str)
     digest = hashlib.sha256(input_str.encode("utf-8")).hexdigest().upper()
     return digest
 
-def sign_xml_with_xmlsec(xml_elem, key_path=KEY, cert_path=CERT):
-    """
-    Sign xml_elem in-place using python-xmlsec. Assumes xml_elem is the Envelope
-    and that registro_alta element has been marked with attribute Id.
-    """
+def sign_xml_with_xmlsec(xml_elem, key_path, cert_path):
+    """Sign xml_elem in-place using python-xmlsec"""
     nodes = xml_elem.xpath('//*[local-name()="RegistroAlta"]')
     if not nodes:
         raise RuntimeError("RegistroAlta not found for signing")
     registro_alta = nodes[0]
 
-    # create template and append to registro_alta (at end)
     signature_node = xmlsec.template.create(
         registro_alta,
         xmlsec.Transform.EXCL_C14N,
@@ -227,25 +210,8 @@ def sign_xml_with_xmlsec(xml_elem, key_path=KEY, cert_path=CERT):
     ctx.sign(signature_node)
     return xml_elem
 
-def save_bytes(path: Path, data: bytes):
-    path.write_bytes(data)
-    print(f"Saved {path}")
-
-def serialize_resp_to_json(resp, path: Path):
-    try:
-        r = helpers.serialize_object(resp)
-    except Exception:
-        r = str(resp)
-    path.write_text(json.dumps(r, indent=2, ensure_ascii=False, default=str), encoding='utf-8')
-    print(f"Wrote parsed response to {path}")
-
-# recursive search util to find invoice data in consulta response
 def find_invoice_info(obj):
-    """
-    Recursively search a serialized zeep object/dict/list for a dict that contains
-    IDEmisorFactura, NumSerieFactura, FechaExpedicionFactura and Huella.
-    Returns dict with those keys or None.
-    """
+    """Recursively search for invoice data in consulta response"""
     if isinstance(obj, dict):
         keys = set(obj.keys())
         want = {"IDEmisorFactura", "NumSerieFactura", "FechaExpedicionFactura", "Huella"}
@@ -267,12 +233,8 @@ def find_invoice_info(obj):
                 return found
     return None
 
-# attempt to call ConsultaFactuSistemaFacturacion with a variety of param names
 def attempt_consulta(proxy, cabecera_dict, prev_idpet):
-    """
-    Try to call proxy.ConsultaFactuSistemaFacturacion with different parameter names.
-    Returns parsed response object (zeep) on success or raises last exception.
-    """
+    """Try to call ConsultaFactuSistemaFacturacion with different parameter names"""
     candidate_param_names = [
         "IdPeticionRegistro", "IdPeticion", "IDPeticionRegistro", "IdPeticionRegistroDuplicado",
         "IdPeticionRegistroDuplicadoConsulta", "IdPeticionRegistroAnterior", "Peticion", "IdRegistro"
@@ -281,7 +243,6 @@ def attempt_consulta(proxy, cabecera_dict, prev_idpet):
     for pname in candidate_param_names:
         try:
             kwargs = {"Cabecera": cabecera_dict, pname: prev_idpet}
-            print(f"Trying Consulta with param '{pname}'")
             resp = proxy.ConsultaFactuSistemaFacturacion(**kwargs)
             return resp
         except Exception as e:
@@ -289,279 +250,398 @@ def attempt_consulta(proxy, cabecera_dict, prev_idpet):
     raise last_exc
 
 # --------------------------
-# Main flow (with automatic consulta+reintento)
+# MAPEO: Sales Invoice -> Payload AEAT
 # --------------------------
-def main():
-    print("=" * 80)
-    print("Sign and Send - AEAT Verifactu (with auto consulta/retry)")
-    print("=" * 80)
-
-    # basic checks
-    if not WSDL_PATH.exists():
-        raise SystemExit(f"WSDL not found: {WSDL_PATH}")
-    if not Path(CERT).exists():
-        raise SystemExit(f"Certificate not found: {CERT}")
-    if not Path(KEY).exists():
-        raise SystemExit(f"Private key not found: {KEY}")
-    if not Path(CA_BUNDLE).exists():
-        raise SystemExit(f"CA bundle not found: {CA_BUNDLE}")
-
-    # setup client/proxy
-    session = requests.Session()
-    session.cert = (CERT, KEY)
-    session.verify = CA_BUNDLE
-
-    transport = LocalMappingTransport(local_map=LOCAL_XSD_MAP, docs_dirs=DOCS_DIRS, xsd_san_path=XSD_SAN_PATH, session=session, timeout=60)
-    settings = Settings(strict=False, xml_huge_tree=True)
-    history = HistoryPlugin()
-    client = Client(wsdl=WSDL_PATH.resolve().as_uri(), transport=transport, settings=settings, plugins=[history])
-
-    svc = client.wsdl.services.get("sfVerifactu")
-    port_obj = next(iter(svc.ports.values()))
-    binding_qname = port_obj.binding.name
-
-    # resolve address
-    address = None
-    if hasattr(port_obj, 'binding_options') and 'address' in port_obj.binding_options:
-        address = port_obj.binding_options['address']
-    if not address:
-        for definition in client.wsdl._definitions.values():
-            for svc_def in definition.services.values():
-                if svc_def.name == svc.name:
-                    for port_def in svc_def.ports.values():
-                        if port_def.name == port_obj.name:
-                            address = port_def.binding_options.get('address')
-                            break
-                    break
-            if address:
-                break
-    if USE_PREPROD:
-        address = address.replace("www1.agenciatributaria.gob.es", "prewww1.aeat.es").replace("www2.agenciatributaria.gob.es", "prewww2.aeat.es")
-
-    proxy = client.create_service(binding_qname, address)
-    print(f"Proxy ready (endpoint={address})")
-
-    # Build base payload with Encadenamiento
-    # IMPORTANTE: Encadenamiento es OBLIGATORIO - usar PrimerRegistro o RegistroAnterior
-    base_registro_alta = {
+def map_sales_invoice_to_payload(invoice_doc, company_settings, prev_hash=None):
+    """
+    Mapea Sales Invoice de ERPNext -> payload AEAT.
+    IMPORTANTE: Ajusta campos según tu configuración y esquema AEAT.
+    """
+    # Obtener NIF emisor desde Company Settings
+    nif_emisor = company_settings.get("nif_emisor") or invoice_doc.company_tax_id or ""
+    
+    # Determinar si es primera factura o tiene anterior
+    is_first = prev_hash is None or prev_hash == ""
+    
+    # Serie y número
+    series = invoice_doc.get("series") or invoice_doc.get("naming_series") or "F"
+    numero = invoice_doc.name
+    
+    # Fechas
+    fecha_exp = str(invoice_doc.posting_date)
+    hora_gen = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+01:00")  # Ajustar huso horario
+    
+    # Tipo factura - mapear según tu lógica
+    tipo_factura = "F1"  # Factura completa
+    if invoice_doc.is_return:
+        tipo_factura = "R1"  # Rectificativa
+    
+    # Calcular totales
+    base_imponible = float(invoice_doc.net_total or 0)
+    cuota_total = float(invoice_doc.total_taxes_and_charges or 0)
+    importe_total = float(invoice_doc.grand_total or 0)
+    
+    # Desglose de impuestos - simplificado
+    detalle_desglose = []
+    for tax in invoice_doc.taxes:
+        detalle_desglose.append({
+            "Impuesto": "01",  # IVA
+            "CalificacionOperacion": "S1",  # Sujeta y no exenta
+            "ClaveRegimen": "01",  # General
+            "TipoImpositivo": "{:.2f}".format(float(tax.rate or 0)),
+            "BaseImponibleOimporteNoSujeto": "{:.2f}".format(base_imponible),
+            "CuotaRepercutida": "{:.2f}".format(cuota_total)
+        })
+    
+    # Si no hay impuestos, agregar uno por defecto
+    if not detalle_desglose:
+        detalle_desglose.append({
+            "Impuesto": "01",
+            "CalificacionOperacion": "S1",
+            "ClaveRegimen": "01",
+            "TipoImpositivo": "21.00",
+            "BaseImponibleOimporteNoSujeto": "{:.2f}".format(base_imponible),
+            "CuotaRepercutida": "{:.2f}".format(cuota_total)
+        })
+    
+    # Sistema Informático
+    sistema_informatico = {
+        "NombreRazon": company_settings.get("company_name") or invoice_doc.company,
+        "NIF": nif_emisor,
+        "NombreSistemaInformatico": "ERPNext",
+        "IdSistemaInformatico": "01",
+        "Version": "1.0",
+        "NumeroInstalacion": "001",
+        "TipoUsoPosibleSoloVerifactu": "N",
+        "TipoUsoPosibleMultiOT": "N",
+        "IndicadorMultiplesOT": "N"
+    }
+    
+    # RegistroAlta base
+    registro_alta = {
         "IDVersion": "1.0",
         "IDFactura": {
-            "IDEmisorFactura": "35429235X",
-            "NumSerieFactura": "F-0003",
-            "FechaExpedicionFactura": "25-11-2025"
+            "IDEmisorFactura": nif_emisor,
+            "NumSerieFactura": f"{series}-{numero}",
+            "FechaExpedicionFactura": fecha_exp
         },
-        "NombreRazonEmisor": "Juan Ejemplo García",
-        "DescripcionOperacion": "Suministro de servicios - prueba",
-        "TipoFactura": "F2",
+        "NombreRazonEmisor": company_settings.get("company_name") or invoice_doc.company,
+        "DescripcionOperacion": invoice_doc.get("remarks") or "Suministro de bienes/servicios",
+        "TipoFactura": tipo_factura,
         "Desglose": {
-            "DetalleDesglose": [
-                {
-                    "Impuesto": "01",
-                    "CalificacionOperacion": "S1",
-                    "ClaveRegimen": "01",
-                    "TipoImpositivo": "21.00",
-                    "BaseImponibleOimporteNoSujeto": "82.64",
-                    "CuotaRepercutida": "17.36"
-                }
-            ]
+            "DetalleDesglose": detalle_desglose
         },
-        "CuotaTotal": "17.36",
-        "ImporteTotal": "100.00",
-        "SistemaInformatico": {
-            "NombreRazon": "Felipe Acosta",
-            "NIF": "35429235X",
-            "NombreSistemaInformatico": "ERPNext",
-            "IdSistemaInformatico": "01",
-            "Version": "1.0",
-            "NumeroInstalacion": "001",
-            "TipoUsoPosibleSoloVerifactu": "N",
-            "TipoUsoPosibleMultiOT": "N",
-            "IndicadorMultiplesOT": "N"
-        },
-        "FechaHoraHusoGenRegistro": "2025-11-25T10:00:00+01:00",
+        "CuotaTotal": "{:.2f}".format(cuota_total),
+        "ImporteTotal": "{:.2f}".format(importe_total),
+        "SistemaInformatico": sistema_informatico,
+        "FechaHoraHusoGenRegistro": hora_gen,
         "TipoHuella": "01",
-        "Huella": "PLACEHOLDER"
+        "Huella": "PLACEHOLDER"  # Se calculará después
     }
-
-    # Añadir Encadenamiento según si es primera factura o no
-    if IS_FIRST_INVOICE:
-        base_registro_alta["Encadenamiento"] = {
-            "PrimerRegistro": "S"
-        }
-        print("✓ Configurado como primera factura (PrimerRegistro=S)")
+    
+    # Encadenamiento
+    if is_first:
+        registro_alta["Encadenamiento"] = {"PrimerRegistro": "S"}
     else:
-        # Si no es primera, necesitas los datos de la factura anterior
-        # Este ejemplo usa valores placeholder - deberías obtenerlos de tu BD
-        base_registro_alta["Encadenamiento"] = {
+        # Buscar datos de factura anterior - DEBES IMPLEMENTAR LÓGICA REAL
+        # Por ahora usamos valores del prev_hash
+        registro_alta["Encadenamiento"] = {
             "RegistroAnterior": {
-                "IDEmisorFactura": "35429235X",
-                "NumSerieFactura": "F-0002",
-                "FechaExpedicionFactura": "24-11-2025",
-                "Huella": "HUELLA_ANTERIOR_PLACEHOLDER"
+                "IDEmisorFactura": nif_emisor,
+                "NumSerieFactura": "PREV_SERIE",  # TODO: obtener de BD
+                "FechaExpedicionFactura": "PREV_FECHA",  # TODO: obtener de BD
+                "Huella": prev_hash or ""
             }
         }
-        print("✓ Configurado con RegistroAnterior (no es primera factura)")
-
+    
+    # Payload completo
     payload = {
         "Cabecera": {
             "ObligadoEmision": {
-                "NIF": "35429235X",
-                "NombreRazon": "Juan Ejemplo García"
+                "NIF": nif_emisor,
+                "NombreRazon": company_settings.get("company_name") or invoice_doc.company
             }
         },
         "RegistroFactura": [
             {
-                "RegistroAlta": base_registro_alta
+                "RegistroAlta": registro_alta
             }
         ]
     }
+    
+    return payload
 
-    # Primary attempt + optional retry if needed
-    def do_send_attempt(attempt_index=1):
-        print(f"\n--- Attempt {attempt_index} ---")
-        # 1) create preview
-        xml_msg = client.create_message(proxy, 'RegFactuSistemaFacturacion', **payload)
-        save_bytes(TO_SIGN_FILE, etree.tostring(xml_msg, pretty_print=True, encoding='utf-8'))
-
-        # 2) compute huella (AEAT expected)
-        huella_hex = compute_huella_verifactu_payload(payload)
-        payload["RegistroFactura"][0]["RegistroAlta"]["Huella"] = huella_hex
-        payload["RegistroFactura"][0]["RegistroAlta"]["TipoHuella"] = "01"
-
-        # 3) recreate xml_msg and save
-        xml_msg = client.create_message(proxy, 'RegFactuSistemaFacturacion', **payload)
-        save_bytes(TO_SIGN_FILE, etree.tostring(xml_msg, pretty_print=True, encoding='utf-8'))
-
-        # 4) ensure Id on RegistroAlta
-        nodes = xml_msg.xpath('//*[local-name()="RegistroAlta"]')
-        if not nodes:
-            raise SystemExit("RegistroAlta not found for signing")
-        registro_alta = nodes[0]
-        if registro_alta.get("Id") is None:
-            registro_alta.set("Id", f"ID-REG-{int(time.time())}")
-
-        # register id and sign
-        if XMLSEC_AVAILABLE:
-            xmlsec.tree.add_ids(xml_msg.getroottree(), ["Id"])
-            sign_xml_with_xmlsec(xml_msg, key_path=KEY, cert_path=CERT)
-        else:
-            raise SystemExit("python-xmlsec required (or implement xmlsec1 fallback)")
-
-        signed_bytes = etree.tostring(xml_msg, pretty_print=True, encoding='utf-8')
-        save_bytes(SIGNED_FILE, signed_bytes)
-
-        # 5) send
+# --------------------------
+# FUNCIÓN PRINCIPAL: process_queue_item
+# --------------------------
+def process_queue_item(queue_item_name: str) -> dict:
+    """
+    Procesa un AEAT Queue Item.
+    
+    Returns:
+        dict con {"ok": True/False, "error": str, "meta": {...}}
+    """
+    if not FRAPPE_AVAILABLE:
+        return {"ok": False, "error": "Frappe not available"}
+    
+    try:
+        # 1. Cargar Queue Item
+        queue_item = frappe.get_doc("AEAT Queue Item", queue_item_name)
+        invoice_name = queue_item.invoice
+        company = queue_item.company
+        
+        # 2. Cargar Sales Invoice
+        invoice = frappe.get_doc("Sales Invoice", invoice_name)
+        
+        # 3. Cargar Company Settings
+        company_settings = frappe.get_doc("AEAT Company Settings", {"company": company})
+        
+        # 4. Obtener certificados y configuración
+        cert_path = company_settings.get("mtls_client_cert_path") or "/etc/ssl/aeat/cert.pem"
+        key_path = company_settings.get("mtls_client_key_path") or "/etc/ssl/aeat/key.pem"
+        ca_bundle = company_settings.get("verifactu_ca_bundle") or "/etc/ssl/aeat/ca-bundle.pem"
+        
+        # Verificar que existan
+        if not Path(cert_path).exists():
+            return {"ok": False, "error": f"Certificate not found: {cert_path}"}
+        if not Path(key_path).exists():
+            return {"ok": False, "error": f"Private key not found: {key_path}"}
+        
+        # 5. Determinar si usar preprod
+        use_preprod = company_settings.get("verifactu_use_preprod") or True
+        
+        # 6. Setup Zeep client
         session = requests.Session()
-        session.cert = (CERT, KEY)
-        session.verify = CA_BUNDLE
-        headers = {'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': ''}
-        resp_http = session.post(address, data=signed_bytes, headers=headers, timeout=60)
-
-        # save sent/received
-        attempt_suffix = f".attempt{attempt_index}"
-        save_bytes(LAST_SENT.with_suffix(LAST_SENT.suffix + attempt_suffix), signed_bytes)
-        Path("/tmp/aeat_last_received_raw.xml").write_text(resp_http.text, encoding='utf-8')
-
-        try:
-            root = etree.fromstring(resp_http.content)
-            pretty = etree.tostring(root, pretty_print=True, encoding='utf-8')
-            save_bytes(LAST_RECEIVED.with_suffix(LAST_RECEIVED.suffix + attempt_suffix), pretty)
-        except Exception:
-            LAST_RECEIVED.with_suffix(LAST_RECEIVED.suffix + attempt_suffix).write_text(resp_http.text, encoding='utf-8')
-
-        try:
-            serialize_resp_to_json(resp_http.text, LAST_RECEIVED_JSON.with_suffix(".attempt" + str(attempt_index) + ".json"))
-        except Exception:
-            pass
-
-        return resp_http
-
-    # Primary attempt
-    resp_http = do_send_attempt(1)
-
-    # Parse response, detect RegistroDuplicado or error 2007
-    doc = etree.fromstring(resp_http.content)
-    ns = {
-        'tikR': 'https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/RespuestaSuministro.xsd',
-        'tik': 'https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd'
-    }
-    # Check for RegistroDuplicado id
-    dup_nodes = doc.xpath('//tikR:RegistroDuplicado//tik:IdPeticionRegistroDuplicado', namespaces=ns)
-    prev_idpet = dup_nodes[0].text if dup_nodes else None
-
-    # Check for specific error codes in textual response
-    code_nodes = doc.xpath('//tikR:CodigoErrorRegistro', namespaces=ns)
-    codes = [n.text for n in code_nodes] if code_nodes else []
-
-    # If we found a RegistroDuplicado id OR error 2007, attempt automatic consulta+reintento once
-    trigger_retry = False
-    if prev_idpet:
-        print("Found RegistroDuplicado IdPeticionRegistroDuplicado:", prev_idpet)
-        trigger_retry = True
-    elif "2007" in codes:
-        print("Detected 2007 in response codes")
-        trigger_retry = True
-
-    if trigger_retry:
-        print("\nAttempting automatic consulta to retrieve invoice data for RegistroAnterior...")
-
-        cabecera = {
-            "ObligadoEmision": {
-                "NIF": payload["Cabecera"]["ObligadoEmision"]["NIF"],
-                "NombreRazon": payload["Cabecera"]["ObligadoEmision"]["NombreRazon"]
+        session.cert = (cert_path, key_path)
+        session.verify = ca_bundle if Path(ca_bundle).exists() else True
+        
+        transport = LocalMappingTransport(
+            local_map=LOCAL_XSD_MAP,
+            docs_dirs=DOCS_DIRS,
+            xsd_san_path=XSD_SAN_PATH,
+            session=session,
+            timeout=60
+        )
+        
+        settings = Settings(strict=False, xml_huge_tree=True)
+        history = HistoryPlugin()
+        
+        client = Client(
+            wsdl=WSDL_PATH.resolve().as_uri(),
+            transport=transport,
+            settings=settings,
+            plugins=[history]
+        )
+        
+        svc = client.wsdl.services.get("sfVerifactu")
+        port_obj = next(iter(svc.ports.values()))
+        binding_qname = port_obj.binding.name
+        
+        # Resolver endpoint
+        address = None
+        if hasattr(port_obj, 'binding_options') and 'address' in port_obj.binding_options:
+            address = port_obj.binding_options['address']
+        
+        if not address:
+            for definition in client.wsdl._definitions.values():
+                for svc_def in definition.services.values():
+                    if svc_def.name == svc.name:
+                        for port_def in svc_def.ports.values():
+                            if port_def.name == port_obj.name:
+                                address = port_def.binding_options.get('address')
+                                break
+                        break
+                if address:
+                    break
+        
+        if use_preprod:
+            address = address.replace("www1.agenciatributaria.gob.es", "prewww1.aeat.es")
+            address = address.replace("www2.agenciatributaria.gob.es", "prewww2.aeat.es")
+        
+        proxy = client.create_service(binding_qname, address)
+        
+        # 7. Obtener prev_hash desde metadata o calcular
+        metadata = json.loads(queue_item.metadata or "{}") if queue_item.metadata else {}
+        prev_hash = metadata.get("prev_hash")
+        
+        # 8. Mapear Sales Invoice -> Payload
+        payload = map_sales_invoice_to_payload(invoice, company_settings, prev_hash)
+        
+        # 9. Función interna para intentar envío
+        def do_send_attempt(attempt_num=1):
+            # 9.1. Crear XML preview
+            xml_msg = client.create_message(proxy, 'RegFactuSistemaFacturacion', **payload)
+            
+            # 9.2. Calcular huella
+            huella_hex = compute_huella_verifactu_payload(payload)
+            payload["RegistroFactura"][0]["RegistroAlta"]["Huella"] = huella_hex
+            payload["RegistroFactura"][0]["RegistroAlta"]["TipoHuella"] = "01"
+            
+            # 9.3. Recrear XML con huella
+            xml_msg = client.create_message(proxy, 'RegFactuSistemaFacturacion', **payload)
+            
+            # 9.4. Añadir Id a RegistroAlta
+            nodes = xml_msg.xpath('//*[local-name()="RegistroAlta"]')
+            if not nodes:
+                raise RuntimeError("RegistroAlta not found")
+            registro_alta = nodes[0]
+            if registro_alta.get("Id") is None:
+                registro_alta.set("Id", f"ID-REG-{invoice_name}-{int(time.time())}")
+            
+            # 9.5. Firmar
+            if not XMLSEC_AVAILABLE:
+                return {"ok": False, "error": "python-xmlsec not available"}
+            
+            xmlsec.tree.add_ids(xml_msg.getroottree(), ["Id"])
+            sign_xml_with_xmlsec(xml_msg, key_path=key_path, cert_path=cert_path)
+            
+            signed_bytes = etree.tostring(xml_msg, pretty_print=True, encoding='utf-8')
+            
+            # 9.6. Guardar sent
+            sent_path = TRACE_DIR / f"aeat_sent_{queue_item_name}_attempt{attempt_num}.xml"
+            sent_path.write_bytes(signed_bytes)
+            
+            # 9.7. Enviar
+            send_session = requests.Session()
+            send_session.cert = (cert_path, key_path)
+            send_session.verify = ca_bundle if Path(ca_bundle).exists() else True
+            headers = {'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': ''}
+            
+            resp_http = send_session.post(address, data=signed_bytes, headers=headers, timeout=60)
+            
+            # 9.8. Guardar received
+            received_path = TRACE_DIR / f"aeat_received_{queue_item_name}_attempt{attempt_num}.xml"
+            received_path.write_bytes(resp_http.content)
+            
+            return {
+                "response": resp_http,
+                "sent_path": str(sent_path),
+                "received_path": str(received_path),
+                "huella": huella_hex
             }
-        }
-
-        found_prev = None
-        if prev_idpet:
-            try:
-                consulta_resp = attempt_consulta(proxy, cabecera, prev_idpet)
-                print("Consulta returned, serializing...")
-                s = helpers.serialize_object(consulta_resp)
-                found_prev = find_invoice_info(s)
-                print("Found prev invoice info in consulta response:", found_prev)
-            except Exception as e:
-                print("Consulta attempt failed:", repr(e))
-
-        if not found_prev:
-            try:
-                p = LAST_RECEIVED.with_suffix(LAST_RECEIVED.suffix + ".attempt1")
-                if p.exists():
-                    doc2 = etree.parse(str(p))
-                    h = doc2.xpath('//tik:Huella', namespaces=ns)
-                    sid = doc2.xpath('//tik:NumSerieFactura', namespaces=ns)
-                    sdate = doc2.xpath('//tik:FechaExpedicionFactura', namespaces=ns)
-                    sadmin = doc2.xpath('//tik:IDEmisorFactura', namespaces=ns)
-                    if h and sid and sdate and sadmin:
-                        found_prev = {
-                            "IDEmisorFactura": sadmin[0].text,
-                            "NumSerieFactura": sid[0].text,
-                            "FechaExpedicionFactura": sdate[0].text,
-                            "Huella": h[0].text
+        
+        # 10. Primer intento
+        result = do_send_attempt(1)
+        resp_http = result["response"]
+        
+        # 11. Parsear respuesta
+        try:
+            doc = etree.fromstring(resp_http.content)
+            ns = {
+                'tikR': 'https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/RespuestaSuministro.xsd',
+                'tik': 'https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd'
+            }
+            
+            # Buscar códigos de error
+            code_nodes = doc.xpath('//tikR:CodigoErrorRegistro', namespaces=ns)
+            codes = [n.text for n in code_nodes] if code_nodes else []
+            
+            # Buscar RegistroDuplicado
+            dup_nodes = doc.xpath('//tikR:RegistroDuplicado//tik:IdPeticionRegistroDuplicado', namespaces=ns)
+            prev_idpet = dup_nodes[0].text if dup_nodes else None
+            
+            # Decisión de reintento
+            trigger_retry = False
+            if prev_idpet or "2007" in codes:
+                trigger_retry = True
+            
+            if trigger_retry and queue_item.attempts < 3:
+                # Intentar consulta y reintento
+                frappe.log_error(f"AEAT: Attempting auto-retry for {queue_item_name}", "AEAT Auto-Retry")
+                
+                cabecera = {
+                    "ObligadoEmision": {
+                        "NIF": payload["Cabecera"]["ObligadoEmision"]["NIF"],
+                        "NombreRazon": payload["Cabecera"]["ObligadoEmision"]["NombreRazon"]
+                    }
+                }
+                
+                found_prev = None
+                if prev_idpet:
+                    try:
+                        consulta_resp = attempt_consulta(proxy, cabecera, prev_idpet)
+                        s = helpers.serialize_object(consulta_resp)
+                        found_prev = find_invoice_info(s)
+                    except Exception as e:
+                        frappe.log_error(str(e), "AEAT Consulta Failed")
+                
+                if found_prev:
+                    # Actualizar payload con RegistroAnterior
+                    payload["RegistroFactura"][0]["RegistroAlta"]["Encadenamiento"] = {
+                        "RegistroAnterior": {
+                            "IDEmisorFactura": found_prev["IDEmisorFactura"],
+                            "NumSerieFactura": found_prev["NumSerieFactura"],
+                            "FechaExpedicionFactura": found_prev["FechaExpedicionFactura"],
+                            "Huella": found_prev["Huella"]
                         }
-                        print("Found prev invoice info in saved response:", found_prev)
-            except Exception as e:
-                print("Error searching saved response for previous invoice info:", e)
-
-        if not found_prev:
-            print("Could not retrieve previous invoice data automatically. Aborting automatic retry.")
-        else:
-            # inject RegistroAnterior into payload
-            payload["RegistroFactura"][0]["RegistroAlta"]["Encadenamiento"] = {
-                "RegistroAnterior": {
-                    "IDEmisorFactura": found_prev["IDEmisorFactura"],
-                    "NumSerieFactura": found_prev["NumSerieFactura"],
-                    "FechaExpedicionFactura": found_prev["FechaExpedicionFactura"],
-                    "Huella": found_prev["Huella"]
+                    }
+                    
+                    # Segundo intento
+                    result2 = do_send_attempt(2)
+                    resp_http = result2["response"]
+                    result = result2
+                    
+                    # Re-parsear respuesta
+                    doc = etree.fromstring(resp_http.content)
+                    code_nodes = doc.xpath('//tikR:CodigoErrorRegistro', namespaces=ns)
+                    codes = [n.text for n in code_nodes] if code_nodes else []
+            
+            # 12. Determinar estado final
+            if resp_http.status_code == 200 and not codes:
+                status = "Accepted"
+            elif codes:
+                status = "AcceptedWithErrors" if "1000" in codes else "Failed"
+            else:
+                status = "Failed"
+            
+            # 13. Actualizar Queue Item
+            metadata_updated = metadata.copy()
+            metadata_updated.update({
+                "huella": result["huella"],
+                "sent_path": result["sent_path"],
+                "received_path": result["received_path"],
+                "response_codes": codes,
+                "http_status": resp_http.status_code
+            })
+            
+            return {
+                "ok": status in ["Accepted", "AcceptedWithErrors"],
+                "meta": {
+                    "status": status,
+                    "response_code": resp_http.status_code,
+                    "response_text": resp_http.text[:500],
+                    "sent_path": result["sent_path"],
+                    "received_path": result["received_path"],
+                    "metadata": json.dumps(metadata_updated, ensure_ascii=False)
                 }
             }
-            print("Injected RegistroAnterior into payload:", pformat(payload["RegistroFactura"][0]["RegistroAlta"]["Encadenamiento"]))
+            
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), f"AEAT Response Parse Error: {queue_item_name}")
+            return {
+                "ok": False,
+                "error": f"Failed to parse response: {str(e)}",
+                "meta": {
+                    "status": "Failed",
+                    "sent_path": result.get("sent_path"),
+                    "received_path": result.get("received_path")
+                }
+            }
+        
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), f"AEAT Process Error: {queue_item_name}")
+        return {
+            "ok": False,
+            "error": str(e)
+        }
 
-            resp_http2 = do_send_attempt(2)
-            print("\nSecond attempt response saved. See /tmp files for traces.")
-            print(resp_http2.text[:2000])
-
-    print("\nFinished. Check /tmp/aeat_last_sent*.attempt* and /tmp/aeat_last_received*.attempt* for traces.")
+# --------------------------
+# Main para testing standalone
+# --------------------------
+def main():
+    """Para testing directo del script"""
+    print("This script is meant to be imported, not run directly.")
+    print("Use: from aeat_module.scripts.sign_and_send import process_queue_item")
 
 if __name__ == "__main__":
     main()
