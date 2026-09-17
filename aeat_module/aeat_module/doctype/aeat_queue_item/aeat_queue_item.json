@@ -1,0 +1,120 @@
+{
+  "doctype": "DocType",
+  "name": "AEAT Queue Item",
+  "module": "AEAT Module",
+  "custom": 1,
+  "is_table": 0,
+  "fields": [
+    {
+      "fieldname": "invoice",
+      "label": "Invoice",
+      "fieldtype": "Dynamic Link",
+      "options": "invoice_type",
+      "description": "Link to the ERPNext document to be sent (Sales Invoice). invoice_type controls the doctype name"
+    },
+    {
+      "fieldname": "invoice_type",
+      "label": "Invoice Type",
+      "fieldtype": "Data",
+      "description": "Doctype name for invoice link (e.g. 'Sales Invoice')"
+    },
+    {
+      "fieldname": "company",
+      "label": "Company",
+      "fieldtype": "Link",
+      "options": "Company"
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Pending\nProcessing\nSent\nAccepted\nAcceptedWithErrors\nFailed\nDuplicate",
+      "default": "Pending"
+    },
+    {
+      "fieldname": "priority",
+      "label": "Priority",
+      "fieldtype": "Int",
+      "default": 0
+    },
+    {
+      "fieldname": "attempts",
+      "label": "Attempts",
+      "fieldtype": "Int",
+      "default": 0
+    },
+    {
+      "fieldname": "last_error",
+      "label": "Last Error",
+      "fieldtype": "Small Text"
+    },
+    {
+      "fieldname": "last_response_code",
+      "label": "Last Response Code",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "metadata",
+      "label": "Metadata",
+      "fieldtype": "Text",
+      "description": "JSON blob for storing huella, registro anterior, idpet etc."
+    },
+    {
+      "fieldname": "last_sent_path",
+      "label": "Last Sent Path",
+      "fieldtype": "Data",
+      "description": "Filesystem path to the last raw SOAP sent"
+    },
+    {
+      "fieldname": "last_received_path",
+      "label": "Last Received Path",
+      "fieldtype": "Data",
+      "description": "Filesystem path to the last raw SOAP received"
+    },
+    {
+      "fieldname": "locked_by",
+      "label": "Locked By",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "description": "Worker that currently holds the lock"
+    },
+    {
+      "fieldname": "lock_timestamp",
+      "label": "Lock Timestamp",
+      "fieldtype": "Datetime"
+    },
+    {
+      "fieldname": "created_by",
+      "label": "Created By",
+      "fieldtype": "Link",
+      "options": "User"
+    },
+    {
+      "fieldname": "created_at",
+      "label": "Created At",
+      "fieldtype": "Datetime",
+      "default": "Now"
+    },
+    {
+      "fieldname": "updated_at",
+      "label": "Updated At",
+      "fieldtype": "Datetime"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0
+    }
+  ]
+}

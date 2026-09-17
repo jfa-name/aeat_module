@@ -1571,7 +1571,7 @@
 			</xs:enumeration>
 		</xs:restriction>
 	</xs:simpleType>
-</xs:schema><xs:schema targetNamespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd" elementFormDefault="qualified"><xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="xmldsig-core-schema.xsd.sanitized"/>
+</xs:schema><xs:schema targetNamespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd" elementFormDefault="qualified"><xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="file:///home/develop/workspace/baygroup/file:///home/develop/workspace/baygroup/file:///home/develop/workspace/baygroup/%24XSD_SAN"/>
 	<xs:complexType name="CabeceraType">
 		<xs:annotation>
 			<xs:documentation xml:lang="es"> Datos de cabecera </xs:documentation>
@@ -2976,7 +2976,7 @@
 			</xs:choice>
 		</xs:sequence>
 	</xs:complexType>
-</xs:schema><xs:schema targetNamespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/ConsultaLR.xsd" elementFormDefault="qualified"><xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="xmldsig-core-schema.xsd.sanitized"/>
+</xs:schema><xs:schema targetNamespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/ConsultaLR.xsd" elementFormDefault="qualified"><xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="file:///home/develop/workspace/baygroup/file:///home/develop/workspace/baygroup/file:///home/develop/workspace/baygroup/%24XSD_SAN"/>
 	<xs:complexType name="CabeceraType">
 		<xs:annotation>
 			<xs:documentation xml:lang="es"> Datos de cabecera </xs:documentation>
@@ -4409,7 +4409,7 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
-</xs:schema><xs:schema targetNamespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/RespuestaConsultaLR.xsd" elementFormDefault="qualified"><xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="xmldsig-core-schema.xsd.sanitized"/>
+</xs:schema><xs:schema targetNamespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/RespuestaConsultaLR.xsd" elementFormDefault="qualified"><xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="file:///home/develop/workspace/baygroup/file:///home/develop/workspace/baygroup/file:///home/develop/workspace/baygroup/%24XSD_SAN"/>
 	<xs:complexType name="CabeceraType">
 		<xs:annotation>
 			<xs:documentation xml:lang="es"> Datos de cabecera </xs:documentation>
@@ -5987,7 +5987,7 @@
 			</xs:enumeration>
 		</xs:restriction>
 	</xs:simpleType>
-</xs:schema><xs:schema targetNamespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/RespuestaSuministro.xsd" elementFormDefault="qualified"><xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="xmldsig-core-schema.xsd.sanitized"/>
+</xs:schema><xs:schema targetNamespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/RespuestaSuministro.xsd" elementFormDefault="qualified"><xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="file:///home/develop/workspace/baygroup/file:///home/develop/workspace/baygroup/file:///home/develop/workspace/baygroup/%24XSD_SAN"/>
 	<xs:complexType name="CabeceraType">
 		<xs:annotation>
 			<xs:documentation xml:lang="es"> Datos de cabecera </xs:documentation>
@@ -7373,7 +7373,7 @@
 			</xs:enumeration>
 		</xs:restriction>
 	</xs:simpleType>
-<xs:import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd" schemaLocation="SuministroInformacion.xsd"/>
+<xs:import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd" schemaLocation="file:///home/develop/workspace/baygroup/apps/docs/SuministroInformacion.xsd.sanitized.imports_rewritten"/>
 	<xs:element name="RegFactuSistemaFacturacion">
 		<xs:complexType>
 			<xs:sequence>
@@ -7526,11 +7526,11 @@
 		<xs:restriction base="integer"/>
 	</xs:simpleType>
 </xs:schema><xs:schema targetNamespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SistemaFacturacion.wsdl" elementFormDefault="qualified">
-			<xs:import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd" schemaLocation="SuministroInformacion.xsd"/>
-			<xs:import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd" schemaLocation="SuministroLR.xsd"/>
-			<xs:import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/ConsultaLR.xsd" schemaLocation="ConsultaLR.xsd"/>
-			<xs:import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/RespuestaConsultaLR.xsd" schemaLocation="RespuestaConsultaLR.xsd"/>
-			<xs:import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/RespuestaSuministro.xsd" schemaLocation="RespuestaSuministro.xsd"/>
+			<xs:import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd" schemaLocation="file:///home/develop/workspace/baygroup/apps/docs/SuministroInformacion.xsd.sanitized.imports_rewritten"/>
+			<xs:import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd" schemaLocation="file:///home/develop/workspace/baygroup/apps/docs/SuministroLR.xsd.sanitized.imports_rewritten"/>
+			<xs:import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/ConsultaLR.xsd" schemaLocation="file:///home/develop/workspace/baygroup/apps/docs/ConsultaLR.xsd.sanitized.imports_rewritten"/>
+			<xs:import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/RespuestaConsultaLR.xsd" schemaLocation="file:///home/develop/workspace/baygroup/apps/docs/RespuestaConsultaLR.xsd.sanitized.imports_rewritten"/>
+			<xs:import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/RespuestaSuministro.xsd" schemaLocation="file:///home/develop/workspace/baygroup/apps/docs/RespuestaSuministro.xsd.sanitized.imports_rewritten"/>
 		</xs:schema>
 	</wsdl:types>
 	<wsdl:message name="EntradaRegFactuSistemaFacturacion">

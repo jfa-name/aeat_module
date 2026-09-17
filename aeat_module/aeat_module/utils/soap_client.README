@@ -1,0 +1,10 @@
+SOAP client wrapper (design notes):
+
+- Proveer funciones:
+  - create_client(wsdl, cert, key, ca_bundle, local_xsd_map)
+  - create_preview(payload) -> lxml Element
+  - send_signed_envelope(bytes) -> requests.Response
+
+- Requisitos:
+  - permitir fallback a enviar raw signed_bytes via requests
+  - exponer history capture when using zeep (HistoryPlugin)

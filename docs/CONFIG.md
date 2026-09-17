@@ -19,7 +19,7 @@ bench pip install -r apps/aeat_module/requirements.txt
 bench migrate
 ```
 
-## 2) AEAT Settings (Config > AEAT Settings)
+## 2) Configurar cada Company (Config > Company > AEAT Settings)
 
 Campos principales:
 - TSA URL: endpoint RFC3161 (ejemplos públicos: consulta con tu TSA/FNMT; no se incluyen aquí por seguridad).

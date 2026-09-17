@@ -1,0 +1,222 @@
+[
+  {
+    "doctype": "Custom Field",
+    "name": "Veri*Factu Settings",
+    "dt": "Company",
+    "fieldname": "verifactu_settings",
+    "label": "Veri*Factu Settings",
+    "fieldtype": "Section Break",
+    "collapsible": 1,
+    "collapsible_depends_on": null,
+    "collumns": 0,
+    "insert_after": "tax_id"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-enable_verifactu",
+    "dt": "Company",
+    "fieldname": "enable_verifactu",
+    "label": "Enable Veri*Factu",
+    "fieldtype": "Check",
+    "insert_after": "verifactu_settings"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_nif_emitter",
+    "dt": "Company",
+    "fieldname": "aeat_nif_emitter",
+    "label": "AEAT NIF Emitter",
+    "fieldtype": "Data",
+    "insert_after": "enable_verifactu"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_environment",
+    "dt": "Company",
+    "fieldname": "aeat_environment",
+    "label": "AEAT Environment",
+    "fieldtype": "Select",
+    "options": "Preprod\nProd",
+    "insert_after": "aeat_nif_emitter"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_series",
+    "dt": "Company",
+    "fieldname": "aeat_series",
+    "label": "AEAT Series",
+    "fieldtype": "Table",
+    "options": "AEAT Series State",
+    "insert_after": "aeat_environment",
+    "description": "Child table to store series state and last_hash per series"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_signer_certificate",
+    "dt": "Company",
+    "fieldname": "aeat_signer_certificate",
+    "label": "AEAT Signer Certificate Path",
+    "fieldtype": "Data",
+    "insert_after": "aeat_series",
+    "description": "Filesystem path to cert.pem (or identifier if using secret manager)"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_signer_key_source",
+    "dt": "Company",
+    "fieldname": "aeat_signer_key_source",
+    "label": "AEAT Signer Key Source",
+    "fieldtype": "Select",
+    "options": "PEM\nPKCS12\nSecretManager",
+    "insert_after": "aeat_signer_certificate"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_signer_key_path",
+    "dt": "Company",
+    "fieldname": "aeat_signer_key_path",
+    "label": "AEAT Signer Key Path",
+    "fieldtype": "Data",
+    "insert_after": "aeat_signer_key_source"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_signer_key_file",
+    "dt": "Company",
+    "fieldname": "aeat_signer_key_file",
+    "label": "AEAT Signer Key File",
+    "fieldtype": "Attach",
+    "insert_after": "aeat_signer_key_path"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_signer_key_password",
+    "dt": "Company",
+    "fieldname": "aeat_signer_key_password",
+    "label": "AEAT Signer Key Password",
+    "fieldtype": "Password",
+    "insert_after": "aeat_signer_key_file"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_tsa_url",
+    "dt": "Company",
+    "fieldname": "aeat_tsa_url",
+    "label": "AEAT TSA URL",
+    "fieldtype": "Data",
+    "insert_after": "aeat_signer_key_password"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_tsa_username",
+    "dt": "Company",
+    "fieldname": "aeat_tsa_username",
+    "label": "AEAT TSA Username",
+    "fieldtype": "Data",
+    "insert_after": "aeat_tsa_url"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_tsa_password",
+    "dt": "Company",
+    "fieldname": "aeat_tsa_password",
+    "label": "AEAT TSA Password",
+    "fieldtype": "Password",
+    "insert_after": "aeat_tsa_username"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_tsa_policy_oid",
+    "dt": "Company",
+    "fieldname": "aeat_tsa_policy_oid",
+    "label": "AEAT TSA Policy OID",
+    "fieldtype": "Data",
+    "insert_after": "aeat_tsa_password"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_tsa_hash_algo",
+    "dt": "Company",
+    "fieldname": "aeat_tsa_hash_algo",
+    "label": "AEAT TSA Hash Algorithm",
+    "fieldtype": "Select",
+    "options": "SHA256\nSHA1",
+    "insert_after": "aeat_tsa_policy_oid"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_verify_tls",
+    "dt": "Company",
+    "fieldname": "aeat_verify_tls",
+    "label": "AEAT Verify TLS",
+    "fieldtype": "Check",
+    "insert_after": "aeat_tsa_hash_algo"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Company-aeat_ca_bundle_path",
+    "dt": "Company",
+    "fieldname": "aeat_ca_bundle_path",
+    "label": "AEAT CA Bundle Path",
+    "fieldtype": "Data",
+    "insert_after": "aeat_verify_tls"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Veri*Factu Info",
+    "dt": "Sales Invoice",
+    "fieldname": "verifactu_info",
+    "label": "Veri*Factu Info",
+    "fieldtype": "Section Break",
+    "collapsible": 1,
+    "collapsible_depends_on": null,
+    "collumns": 2,
+    "insert_after": "remarks"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Sales Invoice-aeat_seal_hash",
+    "dt": "Sales Invoice",
+    "fieldname": "aeat_seal_hash",
+    "label": "AEAT Seal Hash",
+    "fieldtype": "Data",
+    "insert_after": "verifactu_info"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Sales Invoice-aeat_seal_timestamp",
+    "dt": "Sales Invoice",
+    "fieldname": "aeat_seal_timestamp",
+    "label": "AEAT Seal Timestamp",
+    "fieldtype": "Datetime",
+    "insert_after": "aeat_seal_hash"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Sales Invoice-aeat_seal_signature",
+    "dt": "Sales Invoice",
+    "fieldname": "aeat_seal_signature",
+    "label": "AEAT Seal Signature",
+    "fieldtype": "Text",
+    "insert_after": "aeat_seal_timestamp"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Sales Invoice-aeat_seal_status",
+    "dt": "Sales Invoice",
+    "fieldname": "aeat_seal_status",
+    "label": "AEAT Seal Status",
+    "fieldtype": "Select",
+    "options": "Pending\nSigned\nSent\nAccepted\nAcceptedWithErrors\nFailed",
+    "insert_after": "aeat_seal_signature"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Sales Invoice-aeat_seal_evidence",
+    "dt": "Sales Invoice",
+    "fieldname": "aeat_seal_evidence",
+    "label": "AEAT Seal Evidence",
+    "fieldtype": "Text",
+    "insert_after": "aeat_seal_status"
+  }
+]

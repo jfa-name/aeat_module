@@ -1,0 +1,23 @@
+README - AEAT worker
+
+How to run the worker:
+ - From bench console (for quick testing):
+    bench --site <site> console
+    >>> from aeat_module.aeat_module.worker import run_worker
+    >>> run_worker(poll_interval=5)
+
+ - As a long-running process (recommended):
+    Create a small runner that imports run_worker() and executes it, and manage it with supervisor/systemd.
+
+Configuration:
+ - The worker uses AEAT Queue Item records in the DB to know what to process.
+ - Worker id generated as <hostname>:<pid> to allow multiple workers.
+ - Configure Poll interval and lock TTL according to your desired concurrency.
+
+Integration:
+ - Implement process_queue_item(queue_item_name) in aeat_module.scripts.sign_and_send or aeat_module.sign_and_send
+   so processors.process_queue_item can find and call it.
+
+Logging / Traces:
+ - The worker will save sent/received SOAP in the AEAT Queue Item metadata (if the processor provides them).
+ - Use /tmp/aeat_last_* for debugging during development.
