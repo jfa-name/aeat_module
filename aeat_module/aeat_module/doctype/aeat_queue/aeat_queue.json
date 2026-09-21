@@ -1,0 +1,56 @@
+{
+  "doctype": "DocType",
+  "name": "AEAT Queue",
+  "module": "AEAT Module",
+  "custom": 1,
+  "fields": [
+    {
+      "fieldname": "queue_name",
+      "label": "Queue Name",
+      "fieldtype": "Data",
+      "reqd": 1,
+      "description": "Logical name for this processing queue (e.g. verifactu)"
+    },
+    {
+      "fieldname": "company",
+      "label": "Company",
+      "fieldtype": "Link",
+      "options": "Company",
+      "description": "Company whose invoices this queue will process"
+    },
+    {
+      "fieldname": "max_retries",
+      "label": "Max Retries",
+      "fieldtype": "Int",
+      "default": 3,
+      "description": "Maximum automatic retry attempts for transient errors"
+    },
+    {
+      "fieldname": "concurrency",
+      "label": "Concurrency",
+      "fieldtype": "Int",
+      "default": 1,
+      "description": "Number of concurrent worker threads/processes for this queue"
+    },
+    {
+      "fieldname": "enabled",
+      "label": "Enabled",
+      "fieldtype": "Check",
+      "default": 1
+    },
+    {
+      "fieldname": "description",
+      "label": "Description",
+      "fieldtype": "Text"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1
+    }
+  ]
+}

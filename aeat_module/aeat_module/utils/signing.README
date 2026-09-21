@@ -1,0 +1,10 @@
+Signing helpers (design):
+
+- Funciones:
+  - compute_huella_verifactu(payload) -> hex SHA256
+  - sign_xml_element(element, key_path, cert_path, id_attr='Id') -> signed element
+  - sign_using_xmlsec_cli(file_in, key, cert) -> signed bytes (fallback)
+
+- Observaciones:
+  - registrar attribute Id con xmlsec.tree.add_ids(...)
+  - mantener orden de elementos (Signature al final de RegistroAlta)
