@@ -1,0 +1,110 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:category_name",
+ "creation": "2026-09-21 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "category_name",
+  "description",
+  "column_break_1",
+  "impuesto",
+  "clave_regimen",
+  "tipo_impositivo_referencia",
+  "section_break_1",
+  "calificacion_operacion",
+  "operacion_exenta"
+ ],
+ "fields": [
+  {
+   "fieldname": "category_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Nombre",
+   "reqd": 1,
+   "unique": 1,
+   "description": "P.ej. 'IVA 21 General', 'IVA 10 Alimentaci\u00f3n', 'IGIC 7', 'IVA Exento Exportaci\u00f3n'"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Descripci\u00f3n"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "impuesto",
+   "fieldtype": "Select",
+   "label": "Impuesto",
+   "options": "01 - IVA\n02 - IPSI (Ceuta/Melilla)\n03 - IGIC (Canarias)\n05 - Otros",
+   "reqd": 1,
+   "in_list_view": 1,
+   "default": "01 - IVA"
+  },
+  {
+   "fieldname": "clave_regimen",
+   "fieldtype": "Data",
+   "label": "Clave R\u00e9gimen",
+   "default": "01",
+   "reqd": 1,
+   "description": "Ver Lista L3 de la Orden (01 = R\u00e9gimen general, el m\u00e1s habitual)"
+  },
+  {
+   "fieldname": "tipo_impositivo_referencia",
+   "fieldtype": "Percent",
+   "label": "Tipo impositivo (referencia)",
+   "description": "Solo informativo/validaci\u00f3n; el tipo real usado es el de la l\u00ednea de factura"
+  },
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break",
+   "label": "Sujeci\u00f3n / Exenci\u00f3n (excluyentes entre s\u00ed)"
+  },
+  {
+   "fieldname": "calificacion_operacion",
+   "fieldtype": "Select",
+   "label": "Calificaci\u00f3n Operaci\u00f3n",
+   "options": "\nS1 - Sujeta y no exenta - Sin inversi\u00f3n del sujeto pasivo\nS2 - Sujeta y no exenta - Con inversi\u00f3n del sujeto pasivo\nN1 - No sujeta art\u00edculo 7, 14, otros\nN2 - No sujeta por reglas de localizaci\u00f3n",
+   "description": "Rellenar SOLO si la operaci\u00f3n no est\u00e1 exenta (excluyente con Operaci\u00f3n Exenta)"
+  },
+  {
+   "fieldname": "operacion_exenta",
+   "fieldtype": "Select",
+   "label": "Operaci\u00f3n Exenta",
+   "options": "\nE1 - Exenta art\u00edculo 20\nE2 - Exenta art\u00edculo 21 (exportaci\u00f3n)\nE3 - Exenta art\u00edculo 22 (asimiladas exportaci\u00f3n)\nE4 - Exenta art\u00edculos 23-24 (zonas francas, dep\u00f3sitos)\nE5 - Exenta art\u00edculo 25 (entregas intracomunitarias)\nE6 - Exenta otros",
+   "description": "Rellenar SOLO si la operaci\u00f3n est\u00e1 exenta (excluyente con Calificaci\u00f3n Operaci\u00f3n)"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-21 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Aeat Module",
+ "name": "AEAT Tax Category",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Accounts Manager"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

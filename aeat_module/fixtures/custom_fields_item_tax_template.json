@@ -1,0 +1,13 @@
+[
+  {
+    "doctype": "Custom Field",
+    "dt": "Item Tax Template",
+    "name": "Item Tax Template-aeat_tax_category",
+    "fieldname": "aeat_tax_category",
+    "label": "AEAT Tax Category",
+    "fieldtype": "Link",
+    "options": "AEAT Tax Category",
+    "insert_after": "company",
+    "description": "Categor\u00eda AEAT (Impuesto/ClaveRegimen/Calificaci\u00f3n) para las l\u00edneas de factura que usen esta plantilla de impuestos de art\u00edculo. Tiene prioridad sobre la categor\u00eda configurada en la cuenta contable."
+  }
+]

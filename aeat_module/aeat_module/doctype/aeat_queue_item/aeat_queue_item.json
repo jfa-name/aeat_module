@@ -25,6 +25,14 @@
       "options": "Company"
     },
     {
+      "fieldname": "operation",
+      "label": "Operation",
+      "fieldtype": "Select",
+      "options": "Alta\nAnulacion",
+      "default": "Alta",
+      "description": "RegistroAlta (alta de factura) o RegistroAnulacion (anulaci\u00f3n)"
+    },
+    {
       "fieldname": "status",
       "label": "Status",
       "fieldtype": "Select",

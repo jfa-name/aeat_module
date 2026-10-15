@@ -32,17 +32,19 @@ class AEATQueue(Document):
     pass
 
 
-def create_queue_item_from_invoice(invoice_doctype: str, invoice_name: str, company: str, queue_name: str = "verifactu", priority: int = 0) -> str:
+def create_queue_item_from_invoice(invoice_doctype: str, invoice_name: str, company: str, queue_name: str = "verifactu", priority: int = 0, operation: str = "Alta") -> str:
     """
     Create an AEAT Queue Item referencing an invoice.
     Returns the name (primary key) of the created AEAT Queue Item.
-    Idempotent behavior: if there is already a Pending/Processing item for this invoice, returns existing.
+    Idempotent behavior: if there is already a Pending/Processing item for this invoice
+    AND operation, returns existing.
     """
     existing = frappe.get_all("AEAT Queue Item",
                               filters=[
                                   ["invoice_type", "=", invoice_doctype],
                                   ["invoice", "=", invoice_name],
                                   ["company", "=", company],
+                                  ["operation", "=", operation],
                                   ["status", "in", ["Pending", "Processing"]]
                               ],
                               fields=["name", "status"],
@@ -55,6 +57,7 @@ def create_queue_item_from_invoice(invoice_doctype: str, invoice_name: str, comp
         "invoice_type": invoice_doctype,
         "invoice": invoice_name,
         "company": company,
+        "operation": operation,
         "status": "Pending",
         "priority": priority,
         "attempts": 0,
@@ -63,7 +66,7 @@ def create_queue_item_from_invoice(invoice_doctype: str, invoice_name: str, comp
     })
     doc.insert(ignore_permissions=True)
     frappe.db.commit()
-    frappe.logger().info(f"AEAT: created queue item {doc.name} for {invoice_doctype}/{invoice_name}")
+    frappe.logger().info(f"AEAT: created queue item {doc.name} for {invoice_doctype}/{invoice_name} ({operation})")
     return doc.name
 
 

@@ -88,3 +88,42 @@ def run_worker(poll_interval: int = 5, lock_ttl_seconds: int = 300):
                 time.sleep(poll_interval)
     except KeyboardInterrupt:
         LOG.info("AEAT worker interrupted and exiting")
+
+
+def drain_pending_queue(max_items: int = 20) -> dict:
+    """Procesa hasta `max_items` AEAT Queue Item pendientes y retorna.
+    A diferencia de `run_worker` (bucle infinito para un proceso demonio
+    separado), esta función está pensada para invocarse periódicamente desde
+    el scheduler de Frappe (`scheduler_events` en hooks.py), que ya corre
+    dentro del propio bench sin necesitar un proceso adicional."""
+    from aeat_module.aeat_module import processors
+
+    processed = 0
+    ok_count = 0
+    for _ in range(max_items):
+        pending = get_pending_queue_item()
+        if not pending:
+            break
+        queue_item_name = pending.get("name")
+        if not claim_queue_item(queue_item_name, worker_id=WORKER_ID):
+            continue
+        processed += 1
+        try:
+            result = processors.process_queue_item(queue_item_name)
+            if isinstance(result, dict) and result.get("ok"):
+                ok_count += 1
+                mark_queue_item_done(queue_item_name, result.get("meta"))
+            else:
+                err = result.get("error") if isinstance(result, dict) else "Processor returned non-dict result"
+                mark_queue_item_failed(queue_item_name, str(err), transient=True)
+        except Exception as e:
+            LOG.exception("AEAT drain_pending_queue: error processing %s", queue_item_name)
+            mark_queue_item_failed(queue_item_name, str(e), transient=True)
+        finally:
+            try:
+                release_queue_item(queue_item_name, expected_worker_id=WORKER_ID)
+            except Exception:
+                LOG.exception("Error releasing lock for %s", queue_item_name)
+
+    LOG.info("AEAT drain_pending_queue: processed=%s ok=%s", processed, ok_count)
+    return {"processed": processed, "ok": ok_count}
