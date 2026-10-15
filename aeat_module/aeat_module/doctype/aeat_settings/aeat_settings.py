@@ -1,6 +1,8 @@
 import frappe
 from frappe.model.document import Document
 
+from aeat_module.aeat_module.utils.file_security import secure_attached_file
+
 class AEATSettings(Document):
     def validate(self):
         # Validaciones básicas
@@ -10,6 +12,9 @@ class AEATSettings(Document):
             frappe.throw("Debes indicar la ruta de clave privada o la clave de site_config para la clave privada")
         if self.signer_key_source == "Path" and not self.signer_certificate_path:
             frappe.throw("Debes indicar la ruta del certificado público (PEM) cuando usas Path")
+
+    def on_update(self):
+        secure_attached_file(self.signer_private_key_file)
 
     @staticmethod
     def get_active():

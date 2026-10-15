@@ -82,6 +82,9 @@ class VeriFactuSoapClient:
         self.environment = ctx.get("environment") or "preprod"
         self.port_name = PORT_BY_ENVIRONMENT.get(self.environment, "SistemaVerifactuPruebas")
 
+        # Rutas PEM temporales generadas al convertir un PFX/P12 (contienen la
+        # clave privada en texto plano); se eliminan en `cleanup()`.
+        self._temp_cert_files: list[str] = []
         self.cert_path, self.key_path = self._resolve_mtls_cert()
 
         docs_dir = _docs_dir()
@@ -104,6 +107,17 @@ class VeriFactuSoapClient:
                 if port.name == port_name:
                     return port
         raise VeriFactuSoapError(f"Puerto '{port_name}' no encontrado en el WSDL")
+
+    def cleanup(self):
+        """Borra los ficheros PEM temporales generados a partir de un PFX
+        (contienen la clave privada en texto plano en /tmp). Llamar siempre
+        tras usar el cliente (ver api_verifactu.py, try/finally)."""
+        for path in self._temp_cert_files:
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
+        self._temp_cert_files = []
 
     def _resolve_mtls_cert(self):
         """Devuelve (cert_path, key_path) en PEM, convirtiendo desde PFX si
@@ -131,7 +145,9 @@ class VeriFactuSoapClient:
                 file_doc = frappe.get_doc("File", {"file_url": pfx_file})
                 pfx_bytes = Path(file_doc.get_full_path()).read_bytes()
             pwd_bytes = pwd.encode("utf-8") if pwd else None
-            return pfx_to_pem_files(pfx_bytes, pwd_bytes)
+            cert_path, key_path = pfx_to_pem_files(pfx_bytes, pwd_bytes)
+            self._temp_cert_files.extend([cert_path, key_path])
+            return cert_path, key_path
 
         if cert_path and key_path:
             if not Path(cert_path).exists() or not Path(key_path).exists():

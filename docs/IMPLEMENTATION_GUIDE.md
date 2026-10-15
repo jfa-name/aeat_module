@@ -1,19 +1,25 @@
 Implementación - pasos operativos (guía para desarrollador/operador)
 
 1) Requisitos del sistema:
-   - python packages: zeep, lxml, xmlsec, requests
-   - libs del sistema: libxml2, libxmlsec1, libxmlsec1-openssl
-   - openssl
-   - acceso a: cert.pem, key.pem (o .p12) y ca-bundle.pem
+   - python packages: zeep, lxml, signxml, requests (ver pyproject.toml;
+     no se usa python-xmlsec, requiere libxmlsec1-dev vía sudo apt)
+   - openssl (para inspeccionar/convertir certificados .p12 manualmente)
+   - acceso al certificado digital real (.p12/.pfx, o cert.pem+key.pem)
 
-2) Crear DocTypes:
-   - AEAT Settings: endpoint, env (preprod/prod), retry policy, timeout, log level.
-   - AEAT Certificate: referencia/alias a certificado (no almacenar claves en texto plano).
-   - AEAT Queue Item: invoice_id, status, attempt_count, last_error, last_sent_path, last_received_path.
+2) DocTypes relevantes:
+   - AEAT Company Settings: jurisdicción, entorno (preprod/prod), NIF
+     emisor, series, y sección "Autenticación VERI*FACTU" (certificado
+     mTLS real: PFX o cert+key PEM — único lugar donde se configura).
+   - AEAT Queue Item: invoice, operation (Alta/Anulacion), status,
+     attempts, last_error, last_sent_path, last_received_path.
 
 3) Hooks:
-   - on_submit Sales Invoice -> crear AEAT Queue Item y encolar.
-   - Scheduler: periodic worker runner, o use background worker.
+   - on_submit Sales Invoice -> calcula huella/QR y crea AEAT Queue Item
+     (operation="Alta").
+   - on_cancel Sales Invoice -> calcula huella de anulación y crea AEAT
+     Queue Item (operation="Anulacion").
+   - scheduler_events (cron cada 5 min) -> worker.drain_pending_queue()
+     procesa los pendientes sin necesitar un proceso worker.py separado.
 
 4) Worker flow:
    - Pop queue item.

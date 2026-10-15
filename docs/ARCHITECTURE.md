@@ -9,9 +9,13 @@ Resumen de alto nivel:
   - envía por mTLS al endpoint AEAT,
   - guarda last_sent/last_received y mapea códigos de respuesta.
 - Ficheros de configuración y DocTypes:
-  - AEAT Settings (cert paths, CA bundle, endpoint preprod/prod, modo).
-  - AEAT Certificate (almacén o referencia al key/cert).
-  - AEAT Queue (estado, retries, logs).
+  - AEAT Settings (TSA/firma para el sellado interno SIF, solo).
+  - AEAT Company Settings (certificado mTLS real por Company, sección
+    "Autenticación VERI*FACTU" — único lugar donde se configura el
+    certificado usado para hablar con la AEAT; se eliminó el DocType
+    "AEAT Certificate" por duplicar este almacenamiento sin estar
+    conectado a ningún flujo real, ver Fase 4).
+  - AEAT Queue / AEAT Queue Item (estado, reintentos, logs).
 - Integración con UI de ERPNext para monitorizar estado y reprocesar.
 
 Implementar:

@@ -22,16 +22,19 @@ def submit_to_verifactu(doc, vf_hash: str, prev_hash: str | None):
         doc.db_set("verifactu_status", "no_certificate")
         return
 
-    result = client.send_alta(
-        doc,
-        vf_hash=vf_hash,
-        prev_hash=prev_hash,
-        tipo_factura=doc.get("verifactu_invoice_type"),
-        fecha_expedicion=format_fecha_expedicion(doc.posting_date),
-        cuota_total=format_importe(doc.total_taxes_and_charges),
-        importe_total=format_importe(doc.grand_total),
-        fecha_hora_gen=doc.get("verifactu_generation_datetime"),
-    )
+    try:
+        result = client.send_alta(
+            doc,
+            vf_hash=vf_hash,
+            prev_hash=prev_hash,
+            tipo_factura=doc.get("verifactu_invoice_type"),
+            fecha_expedicion=format_fecha_expedicion(doc.posting_date),
+            cuota_total=format_importe(doc.total_taxes_and_charges),
+            importe_total=format_importe(doc.grand_total),
+            fecha_hora_gen=doc.get("verifactu_generation_datetime"),
+        )
+    finally:
+        client.cleanup()
 
     if result.get("ok"):
         doc.db_set("verifactu_status", "accepted")
@@ -64,13 +67,16 @@ def cancel_in_verifactu(doc):
         doc.db_set("verifactu_status", "no_certificate")
         return
 
-    result = client.send_anulacion(
-        doc,
-        vf_hash=doc.get("verifactu_cancel_hash"),
-        prev_hash=doc.get("verifactu_cancel_prev_hash"),
-        fecha_expedicion=format_fecha_expedicion(doc.posting_date),
-        fecha_hora_gen=doc.get("verifactu_cancel_generation_datetime"),
-    )
+    try:
+        result = client.send_anulacion(
+            doc,
+            vf_hash=doc.get("verifactu_cancel_hash"),
+            prev_hash=doc.get("verifactu_cancel_prev_hash"),
+            fecha_expedicion=format_fecha_expedicion(doc.posting_date),
+            fecha_hora_gen=doc.get("verifactu_cancel_generation_datetime"),
+        )
+    finally:
+        client.cleanup()
 
     if result.get("ok"):
         doc.db_set("verifactu_status", "cancelled")
