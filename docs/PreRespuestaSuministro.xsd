@@ -2,8 +2,8 @@
 <!-- editado con XMLSpy v2019 sp1 (x64) (http://www.altova.com) por Puesto de Trabajo (Agencia Estatal de Administracion Tributaria ((AEAT))) -->
 <!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by PC Corporativo (AGENCIA TRIBUTARIA) -->
 <schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:sfR="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/RespuestaSuministro.xsd" xmlns:sf="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd" xmlns:sfLR="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd" targetNamespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/RespuestaSuministro.xsd" elementFormDefault="qualified">
-	<import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd" schemaLocation="file:///home/develop/workspace/baygroup/apps/docs/SuministroInformacion.xsd.sanitized.imports_rewritten"/>
-	<import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd" schemaLocation="file:///home/develop/workspace/baygroup/apps/docs/SuministroLR.xsd.sanitized.imports_rewritten"/>
+	<import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd" schemaLocation="file:///path/to/your/frappe-bench/apps/docs/SuministroInformacion.xsd.sanitized.imports_rewritten"/>
+	<import namespace="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd" schemaLocation="file:///path/to/your/frappe-bench/apps/docs/SuministroLR.xsd.sanitized.imports_rewritten"/>
 	<element name="RespuestaRegFactuSistemaFacturacion" type="sfR:RespuestaRegFactuSistemaFacturacionType"/>
 	<complexType name="RespuestaBaseType">
 		<sequence>

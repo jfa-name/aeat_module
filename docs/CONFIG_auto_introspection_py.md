@@ -4,7 +4,7 @@
 Iniciando auto-introspección...
 ============================================================
 
-Using WSDL: file:///home/develop/workspace/baygroup/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.localized.wsdl
+Using WSDL: file:///path/to/your/frappe-bench/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.localized.wsdl
 WSDL cargado. Servicios: ['sfVerifactu', 'sfRequerimiento']
 Binding: {https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SistemaFacturacion.wsdl}sfVerifactu
 Endpoint: https://www1.agenciatributaria.gob.es/wlpl/TIKE-CONT/ws/SistemaFacturacion/VerifactuSOAP

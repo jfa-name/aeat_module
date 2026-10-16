@@ -9,21 +9,21 @@ import re
 # CONFIGURACIÓN
 # ======================
 DOCS_DIRS = [
-    Path("/home/develop/workspace/baygroup/apps/aeat_module/docs"),
-    Path("/home/develop/workspace/baygroup/apps/docs"),
+    Path("/path/to/your/frappe-bench/apps/aeat_module/docs"),
+    Path("/path/to/your/frappe-bench/apps/docs"),
 ]
 
 LOCAL_XSD_MAP = {
-    "RespuestaConsultaLR.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/RespuestaConsultaLR.xsd.sanitized.imports_rewritten"),
-    "SuministroInformacion.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/SuministroInformacion.xsd.sanitized.imports_rewritten"),
-    "SuministroLR.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/SuministroLR.xsd.sanitized.imports_rewritten"),
-    "ConsultaLR.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/ConsultaLR.xsd.sanitized.imports_rewritten"),
-    "RespuestaSuministro.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/RespuestaSuministro.xsd.sanitized.imports_rewritten"),
-    "xmldsig-core-schema.xsd.sanitized": Path("/home/develop/workspace/baygroup/apps/docs/xmldsig-core-schema.xsd.sanitized"),
-    "SuministroInformacion.xsd": Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/SuministroInformacion.xsd"),
+    "RespuestaConsultaLR.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/aeat_module/docs/RespuestaConsultaLR.xsd.sanitized.imports_rewritten"),
+    "SuministroInformacion.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/aeat_module/docs/SuministroInformacion.xsd.sanitized.imports_rewritten"),
+    "SuministroLR.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/aeat_module/docs/SuministroLR.xsd.sanitized.imports_rewritten"),
+    "ConsultaLR.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/aeat_module/docs/ConsultaLR.xsd.sanitized.imports_rewritten"),
+    "RespuestaSuministro.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/aeat_module/docs/RespuestaSuministro.xsd.sanitized.imports_rewritten"),
+    "xmldsig-core-schema.xsd.sanitized": Path("/path/to/your/frappe-bench/apps/docs/xmldsig-core-schema.xsd.sanitized"),
+    "SuministroInformacion.xsd": Path("/path/to/your/frappe-bench/apps/aeat_module/docs/SuministroInformacion.xsd"),
 }
 
-WSDL_PATH = Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.localized.wsdl")
+WSDL_PATH = Path("/path/to/your/frappe-bench/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.localized.wsdl")
 
 # ======================
 # HELPER: Find xmldsig

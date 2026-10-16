@@ -4,7 +4,7 @@ Recorre apps/docs y apps/aeat_module/docs y reescribe schemaLocation relativos
 por file:// URIs apuntando a las versiones locales sanitizadas si existen.
 
 Uso:
-  /home/develop/workspace/baygroup/env/bin/python apps/aeat_module/scripts/fix_schema_locations_absolute.py
+  /path/to/your/frappe-bench/env/bin/python apps/aeat_module/scripts/fix_schema_locations_absolute.py
 """
 from pathlib import Path
 from lxml import etree

@@ -8,7 +8,7 @@ Introspección automática para operación RegFactuSistemaFacturacion usando Zee
   de ejemplo para todos los elementos obligatorios (minOccurs > 0).
 - Permite apuntar al endpoint de preproducción (prewwwX...) si se desea.
 
-Cortar/pegar entero en bench --site baygroup console y ejecutarlo en una celda.
+Cortar/pegar entero en bench --site your-site console y ejecutarlo en una celda.
 Ajusta paths, certificados y la variable PREPROD (ver más abajo).
 """
 from pathlib import Path
@@ -26,21 +26,21 @@ from zeep.xsd import ComplexType, Element
 # Configuración - Ajusta si hace falta
 # -----------------------
 DOCS_DIRS = [
-    Path("/home/develop/workspace/baygroup/apps/aeat_module/docs"),
-    Path("/home/develop/workspace/baygroup/apps/docs"),
+    Path("/path/to/your/frappe-bench/apps/aeat_module/docs"),
+    Path("/path/to/your/frappe-bench/apps/docs"),
 ]
 
 LOCAL_XSD_MAP = {
-    "RespuestaConsultaLR.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/RespuestaConsultaLR.xsd.sanitized.imports_rewritten"),
-    "SuministroInformacion.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/SuministroInformacion.xsd.sanitized.imports_rewritten"),
-    "SuministroLR.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/SuministroLR.xsd.sanitized.imports_rewritten"),
-    "ConsultaLR.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/ConsultaLR.xsd.sanitized.imports_rewritten"),
-    "RespuestaSuministro.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/RespuestaSuministro.xsd.sanitized.imports_rewritten"),
-    "xmldsig-core-schema.xsd.sanitized": Path("/home/develop/workspace/baygroup/apps/docs/xmldsig-core-schema.xsd.sanitized"),
-    "SuministroInformacion.xsd": Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/SuministroInformacion.xsd"),
+    "RespuestaConsultaLR.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/aeat_module/docs/RespuestaConsultaLR.xsd.sanitized.imports_rewritten"),
+    "SuministroInformacion.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/aeat_module/docs/SuministroInformacion.xsd.sanitized.imports_rewritten"),
+    "SuministroLR.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/aeat_module/docs/SuministroLR.xsd.sanitized.imports_rewritten"),
+    "ConsultaLR.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/aeat_module/docs/ConsultaLR.xsd.sanitized.imports_rewritten"),
+    "RespuestaSuministro.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/aeat_module/docs/RespuestaSuministro.xsd.sanitized.imports_rewritten"),
+    "xmldsig-core-schema.xsd.sanitized": Path("/path/to/your/frappe-bench/apps/docs/xmldsig-core-schema.xsd.sanitized"),
+    "SuministroInformacion.xsd": Path("/path/to/your/frappe-bench/apps/aeat_module/docs/SuministroInformacion.xsd"),
 }
 
-WSDLPATH = Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.localized.wsdl")
+WSDLPATH = Path("/path/to/your/frappe-bench/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.localized.wsdl")
 USE_PREPROD = True
 HOST_MAP = {
     "www1.agenciatributaria.gob.es": "prewww1.aeat.es",

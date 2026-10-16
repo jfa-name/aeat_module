@@ -5,7 +5,7 @@ intente descargar imports remotos que contienen DTD/ENTITY.
 
 Salida: <orig>.inlined.wsdl en el mismo directorio docs/.
 Uso:
-  /home/develop/workspace/baygroup/env/bin/python apps/aeat_module/scripts/inline_wsdl.py
+  /path/to/your/frappe-bench/env/bin/python apps/aeat_module/scripts/inline_wsdl.py
 """
 import os
 from pathlib import Path

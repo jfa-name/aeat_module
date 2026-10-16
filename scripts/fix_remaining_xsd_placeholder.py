@@ -4,7 +4,7 @@ Fix remaining $XSD_SAN / %24XSD_SAN placeholders and normalize file:// repetitio
 in .wsdl/.xsd/.xml files under apps/*.
 
 Usage:
-  /home/develop/workspace/baygroup/env/bin/python apps/aeat_module/scripts/fix_remaining_xsd_placeholder.py
+  /path/to/your/frappe-bench/env/bin/python apps/aeat_module/scripts/fix_remaining_xsd_placeholder.py
 
 What it does:
 - Finds the local sanitized xmldsig file (xmldsig-core-schema.xsd.sanitized) under apps/docs or apps/aeat_module/docs.

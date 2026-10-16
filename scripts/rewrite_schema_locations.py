@@ -4,7 +4,7 @@ Reescribe schemaLocation para apuntar a ficheros locales sanitizados (file:// UR
 Busca en apps/docs y apps/aeat_module/docs y produce <orig>.rewritten.wsdl.
 
 Uso:
-  /home/develop/workspace/baygroup/env/bin/python apps/aeat_module/scripts/rewrite_schema_locations.py
+  /path/to/your/frappe-bench/env/bin/python apps/aeat_module/scripts/rewrite_schema_locations.py
 """
 import os
 from pathlib import Path

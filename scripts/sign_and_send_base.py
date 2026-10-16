@@ -43,10 +43,10 @@ except Exception:
 # --------------------------
 # CONFIG - ajusta según tu entorno
 # --------------------------
-WSDL_PATH = Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.localized.wsdl")
+WSDL_PATH = Path("/path/to/your/frappe-bench/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.localized.wsdl")
 DOCS_DIRS = [
-    Path("/home/develop/workspace/baygroup/apps/aeat_module/docs"),
-    Path("/home/develop/workspace/baygroup/apps/docs"),
+    Path("/path/to/your/frappe-bench/apps/aeat_module/docs"),
+    Path("/path/to/your/frappe-bench/apps/docs"),
 ]
 LOCAL_XSD_MAP = {
     "RespuestaConsultaLR.xsd.sanitized.imports_rewritten": DOCS_DIRS[0] / "RespuestaConsultaLR.xsd.sanitized.imports_rewritten",

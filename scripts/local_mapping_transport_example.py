@@ -13,12 +13,12 @@ import re
 
 # Mapea nombres relevantes a ficheros locales existentes (ajusta rutas si hace falta)
 LOCAL_XSD_MAP = {
-    "SuministroInformacion.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/docs/SuministroInformacion.xsd.sanitized.imports_rewritten"),
-    "SuministroLR.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/docs/SuministroLR.xsd.sanitized.imports_rewritten"),
-    "ConsultaLR.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/docs/ConsultaLR.xsd.sanitized.imports_rewritten"),
-    "RespuestaConsultaLR.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/docs/RespuestaConsultaLR.xsd.sanitized.imports_rewritten"),
-    "RespuestaSuministro.xsd.sanitized.imports_rewritten": Path("/home/develop/workspace/baygroup/apps/docs/RespuestaSuministro.xsd.sanitized.imports_rewritten"),
-    "xmldsig-core-schema.xsd.sanitized": Path("/home/develop/workspace/baygroup/apps/docs/xmldsig-core-schema.xsd.sanitized"),
+    "SuministroInformacion.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/docs/SuministroInformacion.xsd.sanitized.imports_rewritten"),
+    "SuministroLR.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/docs/SuministroLR.xsd.sanitized.imports_rewritten"),
+    "ConsultaLR.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/docs/ConsultaLR.xsd.sanitized.imports_rewritten"),
+    "RespuestaConsultaLR.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/docs/RespuestaConsultaLR.xsd.sanitized.imports_rewritten"),
+    "RespuestaSuministro.xsd.sanitized.imports_rewritten": Path("/path/to/your/frappe-bench/apps/docs/RespuestaSuministro.xsd.sanitized.imports_rewritten"),
+    "xmldsig-core-schema.xsd.sanitized": Path("/path/to/your/frappe-bench/apps/docs/xmldsig-core-schema.xsd.sanitized"),
 }
 
 class LocalMappingTransport(Transport):
@@ -74,7 +74,7 @@ class LocalMappingTransport(Transport):
 # Uso: crea el client con este transport y muestra servicios/operaciones
 # ------------------------
 
-wsdl_path = Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.wsdl")
+wsdl_path = Path("/path/to/your/frappe-bench/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.wsdl")
 wsdl_uri = wsdl_path.resolve().as_uri()
 print("Using WSDL URI:", wsdl_uri)
 

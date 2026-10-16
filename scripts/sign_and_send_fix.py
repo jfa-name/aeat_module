@@ -28,10 +28,10 @@ except Exception:
     XMLSEC_AVAILABLE = False
 
 # CONFIG (ajusta si hace falta)
-WSDL_PATH = Path("/home/develop/workspace/baygroup/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.localized.wsdl")
+WSDL_PATH = Path("/path/to/your/frappe-bench/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.rewritten.localized.wsdl")
 DOCS_DIRS = [
-    Path("/home/develop/workspace/baygroup/apps/aeat_module/docs"),
-    Path("/home/develop/workspace/baygroup/apps/docs"),
+    Path("/path/to/your/frappe-bench/apps/aeat_module/docs"),
+    Path("/path/to/your/frappe-bench/apps/docs"),
 ]
 CERT = "/etc/ssl/aeat/cert.pem"
 KEY = "/etc/ssl/aeat/key.pem"

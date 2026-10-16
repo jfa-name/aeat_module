@@ -8,8 +8,8 @@ This variant is defensive: it skips non-element nodes (comments, PIs),
 sanitizes nsmap entries, and avoids passing invalid objects to lxml.
 
 Usage:
-  /home/develop/workspace/baygroup/env/bin/python apps/aeat_module/scripts/flatten_inlined_wsdl2.py \
-    /home/develop/workspace/baygroup/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.inlined.wsdl
+  /path/to/your/frappe-bench/env/bin/python apps/aeat_module/scripts/flatten_inlined_wsdl2.py \
+    /path/to/your/frappe-bench/apps/aeat_module/docs/PreSistemaFacturacion.wsdl.sanitized.inlined.wsdl
 """
 import sys
 from pathlib import Path
