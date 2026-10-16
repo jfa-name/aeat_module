@@ -11,18 +11,17 @@ required_apps = ["frappe", "erpnext"]
 fixtures = [
     {
         "doctype": "Custom Field",
-        "filters": [["dt", "=", "Sales Invoice"], ["fieldname", "in", [
+        "filters": [["name", "in", ["Sales Invoice-" + fieldname for fieldname in [
+            "aeat_tab", "aeat_seal_section", "aeat_verifactu_section", "aeat_cancel_section",
             "seal_hash", "seal_timestamp", "seal_signature", "seal_status", "seal_evidence",
             "verifactu_prev_hash", "verifactu_hash", "verifactu_id", "verifactu_qr_url", "verifactu_status",
             "verifactu_invoice_type", "verifactu_generation_datetime", "verifactu_qr_image",
             "verifactu_cancel_hash", "verifactu_cancel_prev_hash", "verifactu_cancel_generation_datetime"
-        ]]]
-    },
-    {
-        "doctype": "Custom Field",
-        "filters": [["dt", "in", ["Account", "Item Tax Template"]], ["fieldname", "=", "aeat_tax_category"]]
+        ]] + ["Account-aeat_tax_category", "Item Tax Template-aeat_tax_category"]]]
     }
 ]
+
+after_migrate = "aeat_module.aeat_module.utils.sales_invoice_layout.sync_sales_invoice_layout"
 
 doctype_js = {
     "Sales Invoice": "public/js/sales_invoice_seal.js"
@@ -53,7 +52,7 @@ patches = [
     # NOTA: este listado bajo hooks.py "patches" NO es leído por Frappe (el
     # patch runner usa <app>/patches.txt, que está vacío) — es código muerto
     # heredado de la Fase 0. Los Custom Fields de Sales Invoice se instalan
-    # realmente vía fixtures/custom_fields_sales_invoice.json (sync_fixtures).
+    # realmente vía fixtures/custom_field.json (sync_fixtures).
     # v16: install Custom Fields via Frappe API (idempotent)
     "aeat_module.patches.v16.install_sales_invoice_custom_fields",
 ]
